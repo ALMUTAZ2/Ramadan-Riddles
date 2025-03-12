@@ -4,224 +4,102 @@
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>المتصدرين - فوازير رمضان</title>
-      <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+      <script src="https://cdn.tailwindcss.com"></script>
+      <script src="https://unpkg.com/lucide@latest"></script>
       <style>
+          @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+          
           * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
               font-family: 'Cairo', sans-serif;
           }
 
-          body {
-              background-color: #1a365d;
-              min-height: 100vh;
-              padding: 20px;
+          .crown {
+              animation: float 3s ease-in-out infinite;
           }
 
-          .container {
-              max-width: 800px;
-              margin: 0 auto;
+          @keyframes float {
+              0%, 100% { transform: translateY(0) rotate(0deg); }
+              50% { transform: translateY(-10px) rotate(5deg); }
           }
 
-          .header {
-              background: rgba(255, 255, 255, 0.1);
-              padding: 20px;
-              border-radius: 15px;
-              margin-bottom: 30px;
-              text-align: center;
-              color: white;
+          .winner-card {
+              transition: all 0.3s ease;
           }
-
-          .leaderboard-list {
-              display: flex;
-              flex-direction: column;
-              gap: 20px;
-          }
-
-          .leaderboard-item {
-              background: white;
-              border-radius: 15px;
-              padding: 20px;
-              display: flex;
-              align-items: center;
-              transition: transform 0.3s ease;
-              position: relative;
-              overflow: hidden;
-          }
-
-          .leaderboard-item:hover {
+          .winner-card:hover {
               transform: translateY(-5px);
           }
 
-          .rank-1 {
-              background: linear-gradient(135deg, #ffd700 0%, #fff5d7 100%);
-              box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+          .gradient-gold {
+              background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
           }
-
-          .rank-2 {
-              background: linear-gradient(135deg, #c0c0c0 0%, #f5f5f5 100%);
-              box-shadow: 0 8px 20px rgba(192, 192, 192, 0.3);
+          .gradient-silver {
+              background: linear-gradient(135deg, #C0C0C0 0%, #808080 100%);
           }
-
-          .rank-3 {
-              background: linear-gradient(135deg, #cd7f32 0%, #ffdec4 100%);
-              box-shadow: 0 8px 20px rgba(205, 127, 50, 0.3);
-          }
-
-          .rank-badge {
-              width: 60px;
-              height: 60px;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 24px;
-              font-weight: bold;
-              color: white;
-              margin-left: 20px;
-              flex-shrink: 0;
-              border: 3px solid white;
-          }
-
-          .badge-1 {
-              background: linear-gradient(145deg, #ffd700, #ffa500);
-              box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-          }
-
-          .badge-2 {
-              background: linear-gradient(145deg, #c0c0c0, #a9a9a9);
-              box-shadow: 0 0 20px rgba(192, 192, 192, 0.3);
-          }
-
-          .badge-3 {
-              background: linear-gradient(145deg, #cd7f32, #b87333);
-              box-shadow: 0 0 20px rgba(205, 127, 50, 0.3);
-          }
-
-          .player-info {
-              flex-grow: 1;
-          }
-
-          .rank-title {
-              font-size: 1.5rem;
-              font-weight: bold;
-              color: #1e40af;
-              margin-bottom: 5px;
-          }
-
-          .player-name {
-              font-size: 1.2rem;
-              color: #374151;
-              margin-bottom: 5px;
-          }
-
-          .time-info {
-              font-size: 0.9rem;
-              color: #6b7280;
-          }
-
-          .score {
-              background: rgba(37, 99, 235, 0.9);
-              color: white;
-              padding: 10px 20px;
-              border-radius: 25px;
-              font-weight: bold;
-              font-size: 1.1rem;
-              margin-right: 15px;
-              flex-shrink: 0;
-          }
-
-          .shine {
-              position: absolute;
-              top: 0;
-              left: -100%;
-              width: 50px;
-              height: 100%;
-              background: rgba(255, 255, 255, 0.3);
-              transform: skewX(-20deg);
-              animation: shine 3s infinite;
-          }
-
-          @keyframes shine {
-              100% {
-                  left: 200%;
-              }
-          }
-
-          .back-button {
-              background: #10B981;
-              color: white;
-              padding: 12px 24px;
-              border-radius: 8px;
-              border: none;
-              cursor: pointer;
-              font-size: 16px;
-              font-weight: bold;
-              transition: background 0.3s ease;
-              text-decoration: none;
-              display: inline-block;
-              margin-top: 20px;
-          }
-
-          .back-button:hover {
-              background: #059669;
-          }
-
-          .no-results {
-              background: white;
-              border-radius: 15px;
-              padding: 40px;
-              text-align: center;
-              color: #6b7280;
-          }
-
-          @media (max-width: 480px) {
-              .leaderboard-item {
-                  flex-direction: column;
-                  text-align: center;
-                  gap: 15px;
-                  padding: 15px;
-              }
-
-              .rank-badge {
-                  margin: 0;
-              }
-
-              .score {
-                  margin: 10px 0 0 0;
-              }
+          .gradient-bronze {
+              background: linear-gradient(135deg, #CD7F32 0%, #8B4513 100%);
           }
       </style>
   </head>
-  <body>
-      <div class="container">
-          <div class="header">
-              <h1 style="font-size: 2rem; margin-bottom: 10px;">المتصدرون في فوازير رمضان</h1>
-              <p style="color: rgba(255,255,255,0.8);">أفضل ثلاثة متسابقين لهذا اليوم</p>
-          </div>
-
-          <div id="leaderboard-container" class="leaderboard-list">
-              <!-- سيتم ملء هذا القسم بواسطة JavaScript -->
-          </div>
-
-          <div style="text-align: center;">
-              <a href="index.html" class="back-button">
+  <body class="bg-gradient-to-b from-blue-900 to-indigo-950 min-h-screen">
+      <!-- شريط التاريخ -->
+      <div class="bg-white/5 backdrop-blur-sm border-b border-white/10 p-3 text-white text-center">
+          <div class="max-w-3xl mx-auto flex justify-between items-center">
+              <div class="flex items-center gap-2">
+                  <i data-lucide="calendar" class="w-5 h-5 text-green-400"></i>
+                  <span id="current-date" class="text-green-400"></span>
+              </div>
+              <a href="index.html" class="flex items-center gap-2 text-yellow-400 hover:text-yellow-300">
+                  <i data-lucide="arrow-right" class="w-5 h-5"></i>
                   العودة للمسابقة
               </a>
           </div>
       </div>
 
+      <div class="container mx-auto px-4 py-12">
+          <!-- العنوان -->
+          <div class="text-center mb-16">
+              <h1 class="text-4xl font-bold text-yellow-400 mb-4">🌙 متصدرو اليوم 🌙</h1>
+              <p class="text-white/80">أفضل ثلاثة متسابقين في فوازير رمضان</p>
+          </div>
+
+          <!-- قائمة المتصدرين -->
+          <div class="max-w-3xl mx-auto">
+              <div id="winners-container" class="space-y-4">
+                  <!-- سيتم ملء هذا القسم بواسطة JavaScript -->
+              </div>
+
+              <!-- رسالة عدم وجود نتائج -->
+              <div id="no-results" class="hidden">
+                  <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center">
+                      <i data-lucide="info" class="w-16 h-16 mx-auto text-yellow-400 mb-4"></i>
+                      <h2 class="text-2xl font-bold text-white mb-2">لا توجد نتائج لليوم حتى الآن</h2>
+                      <p class="text-gray-300">كن أول المشاركين في مسابقة اليوم!</p>
+                      <a href="index.html" class="inline-block mt-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-3 rounded-xl">
+                          شارك الآن
+                      </a>
+                  </div>
+              </div>
+          </div>
+      </div>
+
       <script>
-          function formatTime(milliseconds) {
-              return (Math.round(milliseconds / 10) / 100).toFixed(2);
+          // تهيئة أيقونات Lucide
+          lucide.createIcons();
+
+          // تنسيق التاريخ بالعربية
+          const arabicMonths = [
+              "يناير", "فبراير", "مارس", "إبريل", "مايو", "يونيو",
+              "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
+          ];
+
+          function formatDate(date) {
+              const day = date.getDate();
+              const month = arabicMonths[date.getMonth()];
+              const year = date.getFullYear();
+              return `${day} ${month} ${year}`;
           }
 
-          function getRankTitle(rank) {
-              const titles = ['الأول', 'الثاني', 'الثالث'];
-              return titles[rank - 1];
-          }
-
+          // الحصول على المتصدرين الثلاثة الأوائل
           function getTopThreePlayers() {
               try {
                   const scores = JSON.parse(localStorage.getItem('quizScores') || '[]');
@@ -229,10 +107,7 @@
                   
                   return scores
                       .filter(score => score.date.startsWith(today))
-                      .sort((a, b) => {
-                          if (b.score !== a.score) return b.score - a.score;
-                          return a.totalTime - b.totalTime;
-                      })
+                      .sort((a, b) => b.score - a.score)
                       .slice(0, 3);
               } catch (error) {
                   console.error('Error getting scores:', error);
@@ -240,55 +115,87 @@
               }
           }
 
+          // إنشاء بطاقة الفائز
+          function createWinnerCard(player, rank) {
+              const rankConfig = {
+                  1: {
+                      gradient: 'gradient-gold',
+                      icon: '👑',
+                      label: 'المركز الأول',
+                      iconClass: 'crown',
+                      scale: 'scale-105'
+                  },
+                  2: {
+                      gradient: 'gradient-silver',
+                      icon: '🥈',
+                      label: 'المركز الثاني',
+                      iconClass: '',
+                      scale: ''
+                  },
+                  3: {
+                      gradient: 'gradient-bronze',
+                      icon: '🥉',
+                      label: 'المركز الثالث',
+                      iconClass: '',
+                      scale: ''
+                  }
+              };
+
+              const config = rankConfig[rank];
+
+              return `
+                  <div class="winner-card ${config.scale} bg-white/10 backdrop-blur-lg rounded-2xl overflow-hidden">
+                      <div class="${config.gradient} p-6">
+                          <div class="flex items-center gap-4">
+                              <div class="flex-shrink-0">
+                                  <span class="${config.iconClass} text-4xl inline-block">
+                                      ${config.icon}
+                                  </span>
+                              </div>
+                              <div class="flex-1">
+                                  <div class="text-white/80 text-sm mb-1">${config.label}</div>
+                                  <div class="text-white text-xl font-bold">${player.playerName}</div>
+                              </div>
+                              <div class="flex-shrink-0 text-center">
+                                  <div class="text-white/80 text-sm">النقاط</div>
+                                  <div class="text-white text-2xl font-bold">${player.score}</div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              `;
+          }
+
+          // تحديث قائمة المتصدرين
           function updateLeaderboard() {
-              const leaderboardContainer = document.getElementById('leaderboard-container');
+              const winnersContainer = document.getElementById('winners-container');
+              const noResults = document.getElementById('no-results');
+              const currentDate = document.getElementById('current-date');
+              
+              // تحديث التاريخ
+              currentDate.textContent = formatDate(new Date());
+
               const topThree = getTopThreePlayers();
 
               if (topThree.length === 0) {
-                  leaderboardContainer.innerHTML = `
-                      <div class="no-results">
-                          <h2 style="font-size: 1.5rem; margin-bottom: 10px;">لا توجد نتائج لليوم حتى الآن</h2>
-                          <p>كن أول المتسابقين!</p>
-                      </div>
-                  `;
+                  winnersContainer.innerHTML = '';
+                  noResults.classList.remove('hidden');
                   return;
               }
 
-              let html = '';
-              for (let i = 0; i < 3; i++) {
-                  const player = topThree[i];
-                  if (player) {
-                      const rank = i + 1;
-                      html += `
-                          <div class="leaderboard-item rank-${rank}">
-                              <div class="shine"></div>
-                              <div class="rank-badge badge-${rank}">
-                                  ${rank}
-                              </div>
-                              <div class="player-info">
-                                  <div class="rank-title">المركز ${getRankTitle(rank)}</div>
-                                  <div class="player-name">${player.playerName}</div>
-                                  <div class="time-info">الوقت: ${formatTime(player.totalTime)} ثانية</div>
-                              </div>
-                              <div class="score">
-                                  ${player.score} نقطة
-                              </div>
-                          </div>
-                      `;
-                  }
-              }
-              
-              leaderboardContainer.innerHTML = html;
+              noResults.classList.add('hidden');
+              winnersContainer.innerHTML = topThree
+                  .map((player, index) => createWinnerCard(player, index + 1))
+                  .join('');
           }
 
-          // تحديث عند تحميل الصفحة
+          // تحديث الصفحة كل دقيقة
           document.addEventListener('DOMContentLoaded', () => {
               updateLeaderboard();
-              // تحديث كل 30 ثانية
-              setInterval(updateLeaderboard, 30000);
+              setInterval(updateLeaderboard, 60000);
           });
 
-          // إضافة مستمع للتخزين المحلي للتحديث المباشر
+          // تحديث عند تغيير التخزين المحلي
           window.addEventListener('storage', (e) => {
               if (e.key === 'quizScores') {
                   updateLeaderboard();
