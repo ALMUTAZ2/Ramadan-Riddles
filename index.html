@@ -158,12 +158,63 @@
           // تهيئة أيقونات Lucide
           lucide.createIcons();
 
+          // بنك الأسئلة
+          const questionBank = {
+              "12": [
+                  {
+                      question: "ما هو أول مسجد بُني في الإسلام؟",
+                      options: ["المسجد النبوي", "مسجد قباء", "المسجد الحرام", "مسجد القبلتين"],
+                      correct: 1
+                  },
+                  {
+                      question: "في أي غزوة نزل قوله تعالى: 'إذ أنتم بالعدوة الدنيا وهم بالعدوة القصوى'؟",
+                      options: ["غزوة أحد", "غزوة بدر", "غزوة حنين", "غزوة الخندق"],
+                      correct: 1
+                  },
+                  {
+                      question: "ما هو أول ما نزل من القرآن الكريم؟",
+                      options: ["سورة العلق", "سورة الفاتحة", "سورة المدثر", "سورة القلم"],
+                      correct: 0
+                  }
+              ]
+          };
+
+          // حالة اللعبة
+          const gameState = {
+              currentDay: new Date().getDate(),
+              playerName: "",
+              currentQuestion: 0,
+              score: 0,
+              answers: [],
+              timeLeft: 10,
+              timer: null,
+              questions: [],
+              questionStartTime: null,
+              questionTimes: [],
+              totalTime: 0
+          };
+
+          // العناصر
+          const elements = {
+              startScreen: document.getElementById('start-screen'),
+              quizScreen: document.getElementById('quiz-screen'),
+              resultsScreen: document.getElementById('results-screen'),
+              playerNameInput: document.getElementById('player-name'),
+              startButton: document.getElementById('start-button'),
+              playerWelcome: document.getElementById('player-welcome'),
+              questionCounter: document.getElementById('question-counter'),
+              questionText: document.getElementById('question-text'),
+              optionsContainer: document.getElementById('options-container'),
+              timer: document.getElementById('timer'),
+              timerBar: document.getElementById('timer-bar'),
+              quizStatus: document.getElementById('quiz-status')
+          };
+
           // دالة للتحقق من الوقت والتوجيه
           function checkTimeAndRedirect() {
               const now = new Date();
               const hour = now.getHours();
               
-              // إذا كان الوقت 8 مساءً أو بعده، توجيه تلقائي لصفحة المتصدرين
               if (hour >= 20) {
                   window.location.href = 'leaderboard.html';
                   return;
@@ -196,41 +247,6 @@
               }
               return deviceId;
           }
-
-          // بنك الأسئلة لكل يوم
-          const questionBank = {
-              // ... (نفس بنك الأسئلة السابق)
-          };
-
-          // حالة اللعبة
-          const gameState = {
-              currentDay: new Date().getDate(),
-              playerName: "",
-              currentQuestion: 0,
-              score: 0,
-              answers: [],
-              timeLeft: 10,
-              timer: null,
-              questions: [],
-              startTime: null,
-              totalTime: 0
-          };
-
-          // العناصر
-          const elements = {
-              startScreen: document.getElementById('start-screen'),
-              quizScreen: document.getElementById('quiz-screen'),
-              resultsScreen: document.getElementById('results-screen'),
-              playerNameInput: document.getElementById('player-name'),
-              startButton: document.getElementById('start-button'),
-              playerWelcome: document.getElementById('player-welcome'),
-              questionCounter: document.getElementById('question-counter'),
-              questionText: document.getElementById('question-text'),
-              optionsContainer: document.getElementById('options-container'),
-              timer: document.getElementById('timer'),
-              timerBar: document.getElementById('timer-bar'),
-              quizStatus: document.getElementById('quiz-status')
-          };
 
           // تحديث حالة زر البدء وعرض الرسائل
           function updateQuizStatus() {
@@ -267,7 +283,6 @@
                   elements.startButton.disabled = true;
               }
 
-              // إضافة زر المتصدرين بعد الساعة 8 مساءً
               if (hour >= 20) {
                   if (!document.getElementById('leaderboard-button')) {
                       const buttonContainer = elements.startButton.parentElement;
@@ -285,6 +300,149 @@
               }
           }
 
+          // بدء المسابقة
+          function startQuiz() {
+              gameState.playerName = elements.playerNameInput.value.trim();
+              gameState.questions = questionBank[gameState.currentDay] || [];
+              
+              if (gameState.questions.length === 0) {
+                  alert('عذراً، لا توجد أسئلة متاحة اليوم');
+                  return;
+              }
+
+              elements.startScreen.classList.add('hidden');
+              elements.quizScreen.classList.remove('hidden');
+              elements.playerWelcome.textContent = `مرحباً ${gameState.playerName}!`;
+              
+              showQuestion();
+          }
+
+          // عرض السؤال
+          function showQuestion() {
+              const question = gameState.questions[gameState.currentQuestion];
+              elements.questionCounter.textContent = `السؤال ${gameState.currentQuestion + 1} من ${gameState.questions.length}`;
+              elements.questionText.textContent = question.question;
+              
+              elements.optionsContainer.innerHTML = question.options.map((option, index) => `
+                  <button
+                      onclick="handleAnswer(${index})"
+                      class="w-full text-right bg-white/5 hover:bg-white/10 border-2 border-green-400/20 p-4 rounded-xl transition-colors"
+                  >
+                      ${option}
+                  </button>
+              `).join('');
+
+              gameState.questionStartTime = Date.now();
+              startTimer();
+          }
+
+          // معالجة الإجابة
+          function handleAnswer(selectedOption) {
+              clearInterval(gameState.timer);
+              const answerTime = (Date.now() - gameState.questionStartTime) / 1000;
+              gameState.questionTimes.push(answerTime);
+              
+              const question = gameState.questions[gameState.currentQuestion];
+              const isCorrect = selectedOption === question.correct;
+              
+              // حساب النقاط بناءً على السرعة
+              let points = 0;
+              if (isCorrect) {
+                  if (answerTime <= 3) points = 100;
+                  else if (answerTime <= 5) points = 80;
+                  else if (answerTime <= 7) points = 60;
+                  else points = 40;
+              }
+              
+              gameState.score += points;
+              gameState.totalTime += answerTime;
+              
+              const options = elements.optionsContainer.children;
+              options[selectedOption].classList.add(isCorrect ? 'option-correct' : 'option-wrong');
+              if (!isCorrect) {
+                  options[question.correct].classList.add('option-correct');
+              }
+
+              gameState.answers.push({
+                  question: question.question,
+                  selectedAnswer: question.options[selectedOption],
+                  correctAnswer: question.options[question.correct],
+                  isCorrect: isCorrect,
+                  time: answerTime,
+                  points: points
+              });
+
+              setTimeout(() => {
+                  if (gameState.currentQuestion < gameState.questions.length - 1) {
+                      gameState.currentQuestion++;
+                      showQuestion();
+                  } else {
+                      showResults();
+                  }
+              }, 1500);
+          }
+
+          // بدء المؤقت
+          function startTimer() {
+              gameState.timeLeft = 10;
+              elements.timer.textContent = gameState.timeLeft;
+              elements.timerBar.style.width = '100%';
+              
+              clearInterval(gameState.timer);
+              gameState.timer = setInterval(() => {
+                  gameState.timeLeft--;
+                  elements.timer.textContent = gameState.timeLeft;
+                  elements.timerBar.style.width = `${(gameState.timeLeft / 10) * 100}%`;
+                  
+                  if (gameState.timeLeft <= 0) {
+                      handleAnswer(-1);
+                  }
+              }, 1000);
+          }
+
+          // عرض النتائج
+          function showResults() {
+              elements.quizScreen.classList.add('hidden');
+              elements.resultsScreen.classList.remove('hidden');
+
+              const result = {
+                  playerName: gameState.playerName,
+                  score: gameState.score,
+                  totalTime: gameState.totalTime,
+                  date: new Date().toISOString(),
+                  deviceId: localStorage.getItem('deviceId'),
+                  questionTimes: gameState.questionTimes
+              };
+
+              const scores = JSON.parse(localStorage.getItem('quizScores') || '[]');
+              scores.push(result);
+              localStorage.setItem('quizScores', JSON.stringify(scores));
+
+              document.getElementById('final-name').textContent = `الاسم: ${gameState.playerName}`;
+              document.getElementById('final-score').innerHTML = `
+                  النقاط: ${gameState.score}<br>
+                  الوقت الإجمالي: ${gameState.totalTime.toFixed(2)} ثانية
+              `;
+
+              const answersHtml = gameState.answers.map((answer, index) => `
+                  <div class="bg-white/5 p-4 rounded-xl">
+                      <div class="font-bold mb-2">السؤال ${index + 1}</div>
+                      <div class="text-sm opacity-90 mb-2">${answer.question}</div>
+                      <div class="text-sm ${answer.isCorrect ? 'text-green-400' : 'text-red-400'}">
+                          إجابتك: ${answer.selectedAnswer}
+                          ${!answer.isCorrect ? `<br>الإجابة الصحيحة: ${answer.correctAnswer}` : ''}
+                      </div>
+                      <div class="text-sm mt-2">
+                          الوقت: ${answer.time.toFixed(2)} ثانية
+                          <br>
+                          النقاط: ${answer.points}
+                      </div>
+                  </div>
+              `).join('');
+
+              document.getElementById('answers-review').innerHTML = answersHtml;
+          }
+
           // تفعيل زر البدء عند إدخال الاسم
           elements.playerNameInput.addEventListener('input', () => {
               const nameEntered = elements.playerNameInput.value.trim().length > 0;
@@ -294,8 +452,8 @@
               elements.startButton.disabled = !nameEntered || !quizTimeValid || hasParticipatedToday();
           });
 
-          // باقي الدوال (showQuestion, handleAnswer, startTimer, etc.)
-          // ... (نفس الدوال السابقة)
+          // إضافة مستمع لزر البدء
+          elements.startButton.addEventListener('click', startQuiz);
 
           // تهيئة الصفحة
           document.addEventListener('DOMContentLoaded', () => {
