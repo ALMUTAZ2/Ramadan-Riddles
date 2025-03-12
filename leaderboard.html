@@ -13,219 +13,219 @@
               font-family: 'Cairo', sans-serif;
           }
 
+          .podium-wrapper {
+              display: flex;
+              align-items: flex-end;
+              justify-content: center;
+              gap: 20px;
+              margin: 40px auto;
+              padding: 20px;
+          }
+
+          .podium-item {
+              text-align: center;
+              transition: all 0.3s ease;
+          }
+
+          .podium-item:hover {
+              transform: translateY(-10px);
+          }
+
+          .podium-number {
+              font-size: 24px;
+              font-weight: bold;
+              margin-bottom: 10px;
+          }
+
+          .podium-block {
+              width: 100%;
+              border-radius: 12px;
+              padding: 20px;
+              position: relative;
+              overflow: hidden;
+          }
+
+          /* تأثيرات التاج */
           @keyframes float {
-              0%, 100% { transform: translateY(0); }
-              50% { transform: translateY(-10px); }
-          }
-
-          @keyframes pulse {
-              0%, 100% { transform: scale(1); }
-              50% { transform: scale(1.05); }
-          }
-
-          @keyframes rotate {
-              from { transform: rotate(0deg); }
-              to { transform: rotate(360deg); }
+              0%, 100% { transform: translateY(0) rotate(-10deg); }
+              50% { transform: translateY(-10px) rotate(10deg); }
           }
 
           .crown {
               position: absolute;
-              top: -25px;
+              top: -30px;
               left: 50%;
               transform: translateX(-50%);
-              color: #FFD700;
               animation: float 3s ease-in-out infinite;
+              filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
           }
 
-          .winner-card {
-              animation: pulse 2s ease-in-out infinite;
-              position: relative;
+          /* تأثير اللمعان */
+          @keyframes shine {
+              0% { transform: translateX(-100%) rotate(45deg); }
+              100% { transform: translateX(100%) rotate(45deg); }
           }
 
-          .shine {
+          .shine-effect {
               position: absolute;
               top: 0;
               left: 0;
-              right: 0;
-              bottom: 0;
-              background: linear-gradient(
-                  45deg,
-                  transparent 0%,
-                  rgba(255, 255, 255, 0.1) 50%,
-                  transparent 100%
-              );
-              background-size: 200% 200%;
-              animation: shine 3s linear infinite;
+              width: 50px;
+              height: 100%;
+              background: rgba(255, 255, 255, 0.2);
+              transform: skewX(-20deg);
+              animation: shine 3s infinite;
           }
 
-          @keyframes shine {
-              0% { background-position: -200% 0; }
-              100% { background-position: 200% 0; }
-          }
-
-          .star {
-              position: absolute;
-              animation: twinkle 1.5s ease-in-out infinite;
-          }
-
+          /* تأثيرات النجوم */
           @keyframes twinkle {
               0%, 100% { opacity: 1; transform: scale(1); }
               50% { opacity: 0.5; transform: scale(0.8); }
           }
 
-          .score-badge {
-              background: linear-gradient(45deg, #FFD700, #FFA500);
-              animation: pulse 2s ease-in-out infinite;
+          .star {
+              position: absolute;
+              animation: twinkle 2s infinite;
           }
 
+          .score-badge {
+              background: rgba(255, 255, 255, 0.2);
+              padding: 8px 16px;
+              border-radius: 20px;
+              margin-top: 10px;
+              backdrop-filter: blur(5px);
+          }
+
+          /* ألوان البوديوم */
           .first-place {
-              background: linear-gradient(45deg, #FFD700, #FFA500);
+              background: linear-gradient(135deg, #FFD700, #FFA500);
+              height: 300px;
           }
 
           .second-place {
-              background: linear-gradient(45deg, #C0C0C0, #E8E8E8);
+              background: linear-gradient(135deg, #C0C0C0, #E8E8E8);
+              height: 250px;
           }
 
           .third-place {
-              background: linear-gradient(45deg, #CD7F32, #DFA878);
+              background: linear-gradient(135deg, #CD7F32, #DFA878);
+              height: 200px;
           }
       </style>
   </head>
   <body class="bg-gradient-to-b from-blue-900 to-indigo-950 min-h-screen">
-      <div id="main-content">
-          <!-- شريط التاريخ -->
-          <div class="bg-white/5 backdrop-blur-sm border-b border-white/10 p-3 text-white text-center">
-              <div class="max-w-3xl mx-auto flex justify-between items-center">
-                  <div class="flex items-center gap-2">
-                      <i data-lucide="moon-star" class="w-5 h-5 text-yellow-400"></i>
-                      <span id="hijri-date" class="text-yellow-400">12 رمضان 1446هـ</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                      <i data-lucide="trophy" class="w-5 h-5 text-green-400"></i>
-                      <span class="text-green-400">المتصدرين الثلاثة</span>
-                  </div>
+      <!-- شريط التاريخ -->
+      <div class="bg-white/5 backdrop-blur-sm border-b border-white/10 p-4">
+          <div class="max-w-7xl mx-auto flex justify-between items-center">
+              <div class="flex items-center gap-2">
+                  <i data-lucide="moon-star" class="w-6 h-6 text-yellow-400"></i>
+                  <span class="text-yellow-400 text-lg">فوازير رمضان 1446</span>
+              </div>
+              <div class="flex items-center gap-2">
+                  <i data-lucide="trophy" class="w-6 h-6 text-green-400"></i>
+                  <span class="text-green-400 text-lg">المتصدرين الثلاثة</span>
               </div>
           </div>
+      </div>
 
-          <!-- محتوى الصفحة -->
-          <div class="container mx-auto px-4 py-8">
-              <div class="max-w-4xl mx-auto">
-                  <div class="text-center mb-12">
-                      <h1 class="text-4xl font-bold text-yellow-400 mb-4">🌙 أبطال فوازير رمضان 🌙</h1>
-                      <p class="text-white/80 text-lg">المتصدرون الثلاثة في مسابقة اليوم</p>
-                  </div>
+      <!-- المحتوى الرئيسي -->
+      <div class="container mx-auto px-4 py-8">
+          <div class="text-center mb-8">
+              <h1 class="text-4xl font-bold text-yellow-400 mb-4">🌙 أبطال اليوم 🌙</h1>
+              <p class="text-white/80 text-xl">المتصدرون في مسابقة فوازير رمضان</p>
+          </div>
 
-                  <!-- قائمة المتصدرين -->
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-end" id="top-three">
-                      <!-- سيتم ملء هذا القسم ديناميكياً -->
-                  </div>
+          <div id="winners-podium" class="podium-wrapper">
+              <!-- سيتم ملء هذا القسم ديناميكياً -->
+          </div>
 
-                  <!-- زر العودة -->
-                  <div class="text-center mt-12">
-                      <button
-                          onclick="window.location.href='index.html'"
-                          class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-lg inline-flex items-center gap-2 transform hover:scale-105 transition-transform"
-                      >
-                          <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                          العودة للصفحة الرئيسية
-                      </button>
-                  </div>
-              </div>
+          <div class="text-center mt-12">
+              <button onclick="window.location.href='index.html'" class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-lg inline-flex items-center gap-2 transition-transform hover:scale-105">
+                  <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                  العودة للمسابقة
+              </button>
           </div>
       </div>
 
       <script>
           lucide.createIcons();
 
-          function isLeaderboardAccessible() {
-              const now = new Date();
-              const hour = now.getHours();
-              return hour >= 20 || hour < 19;
-          }
-
-          function showAccessDeniedMessage() {
-              const now = new Date();
-              const hour = now.getHours();
-              
-              document.getElementById('main-content').innerHTML = `
-                  <div class="min-h-screen flex items-center justify-center">
-                      <div class="text-center text-white p-8">
-                          <div class="mb-6">
-                              <i data-lucide="lock" class="w-16 h-16 mx-auto text-yellow-400 mb-4"></i>
-                              <h1 class="text-3xl font-bold text-yellow-400 mb-4">عذراً</h1>
-                              ${hour >= 19 && hour < 20 ? 
-                                  '<p class="text-lg">المسابقة جارية الآن! سيتم إعلان النتائج بعد الساعة 8 مساءً</p>' :
-                                  '<p class="text-lg">نتائج المتصدرين ستكون متاحة بعد انتهاء المسابقة في الساعة 8 مساءً</p>'
-                              }
-                          </div>
-                          <button
-                              onclick="window.location.href='index.html'"
-                              class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-lg mt-6 inline-flex items-center gap-2 transform hover:scale-105 transition-transform"
-                          >
-                              <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                              ${hour >= 19 && hour < 20 ? 'المشاركة في المسابقة' : 'العودة للصفحة الرئيسية'}
-                          </button>
-                      </div>
-                  </div>
-              `;
-              lucide.createIcons();
+          function getWinnerEmoji(position) {
+              const emojis = {
+                  1: '👑',
+                  2: '🥈',
+                  3: '🥉'
+              };
+              return emojis[position] || '🏆';
           }
 
           function updateLeaderboard() {
               try {
+                  // استرجاع النتائج من التخزين المحلي
                   const scores = JSON.parse(localStorage.getItem('quizScores') || '[]');
                   const today = new Date().toISOString().split('T')[0];
                   
+                  // فلترة وترتيب النتائج
                   const todayScores = scores
                       .filter(score => score.date.startsWith(today))
                       .sort((a, b) => {
                           if (b.score !== a.score) return b.score - a.score;
                           return a.totalTime - b.totalTime;
                       })
-                      .slice(0, 3); // نأخذ فقط أول 3 متصدرين
+                      .slice(0, 3); // أخذ أفضل 3 نتائج فقط
 
-                  const positions = ['الأول', 'الثاني', 'الثالث'];
-                  const heights = ['h-80', 'h-72', 'h-64'];
-                  const gradients = ['first-place', 'second-place', 'third-place'];
-                  const emojis = ['👑', '🥈', '🥉'];
+                  // ترتيب العرض: الثاني، الأول، الثالث
+                  const displayOrder = [
+                      { index: 1, class: 'second-place', position: 'الثاني' },
+                      { index: 0, class: 'first-place', position: 'الأول' },
+                      { index: 2, class: 'third-place', position: 'الثالث' }
+                  ];
 
                   if (todayScores.length === 0) {
-                      document.getElementById('top-three').innerHTML = `
-                          <div class="col-span-3 text-center text-white/60 py-16">
+                      document.getElementById('winners-podium').innerHTML = `
+                          <div class="text-center text-white/60 py-16 w-full">
                               <i data-lucide="hourglass" class="w-16 h-16 mx-auto mb-4"></i>
                               <p class="text-xl">لا توجد نتائج لليوم حتى الآن</p>
                           </div>
                       `;
+                      lucide.createIcons();
                       return;
                   }
 
-                  const topThreeHtml = todayScores.map((score, index) => `
-                      <div class="flex flex-col items-center ${index === 1 ? 'order-first md:order-none' : ''} relative">
-                          ${index === 0 ? `
-                              <i data-lucide="crown" class="crown w-12 h-12 absolute -top-8"></i>
-                          ` : ''}
-                          <div class="winner-card w-full ${heights[index]} ${gradients[index]} rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden">
-                              <div class="shine"></div>
-                              <div class="text-4xl mb-4">${emojis[index]}</div>
-                              <div class="text-2xl font-bold text-white mb-2">${positions[index]}</div>
-                              <div class="text-xl font-bold text-white mb-4">${score.playerName}</div>
-                              <div class="score-badge px-4 py-2 rounded-full text-white font-bold">
-                                  ${score.score} نقطة
-                              </div>
-                              <div class="text-white/80 text-sm mt-2">
-                                  ${Math.round(score.totalTime / 10) / 100} ثانية
+                  const podiumHTML = displayOrder.map(({ index, class: podiumClass, position }) => {
+                      const winner = todayScores[index];
+                      if (!winner) return ''; // تخطي إذا لم يكن هناك فائز لهذا المركز
+
+                      return `
+                          <div class="podium-item flex-1 max-w-xs">
+                              <div class="podium-block ${podiumClass} relative">
+                                  ${index === 0 ? `
+                                      <i data-lucide="crown" class="crown w-12 h-12 text-yellow-400"></i>
+                                  ` : ''}
+                                  <div class="shine-effect"></div>
+                                  <div class="relative z-10">
+                                      <div class="text-4xl mb-4">${getWinnerEmoji(index + 1)}</div>
+                                      <div class="text-2xl font-bold text-white mb-2">${position}</div>
+                                      <div class="text-xl font-bold text-white mb-4">${winner.playerName}</div>
+                                      <div class="score-badge text-white">
+                                          ${winner.score} نقطة
+                                      </div>
+                                      <div class="text-white/80 text-sm mt-2">
+                                          ${Math.round(winner.totalTime / 10) / 100} ثانية
+                                      </div>
+                                  </div>
                               </div>
                           </div>
-                      </div>
-                  `).join('');
+                      `;
+                  }).join('');
 
-                  document.getElementById('top-three').innerHTML = topThreeHtml;
+                  document.getElementById('winners-podium').innerHTML = podiumHTML;
                   lucide.createIcons();
 
               } catch (error) {
                   console.error('Error updating leaderboard:', error);
-                  document.getElementById('top-three').innerHTML = `
-                      <div class="col-span-3 text-center text-red-400 py-16">
+                  document.getElementById('winners-podium').innerHTML = `
+                      <div class="text-center text-red-400 py-16 w-full">
                           <i data-lucide="alert-triangle" class="w-16 h-16 mx-auto mb-4"></i>
                           <p class="text-xl">حدث خطأ أثناء تحميل النتائج</p>
                       </div>
@@ -234,25 +234,11 @@
               }
           }
 
-          function checkTimeAndRedirect() {
-              const now = new Date();
-              const hour = now.getHours();
-              
-              if (hour === 19) {
-                  window.location.href = 'index.html';
-                  return;
-              }
-          }
-
+          // تحديث المتصدرين عند تحميل الصفحة
           document.addEventListener('DOMContentLoaded', () => {
-              if (!isLeaderboardAccessible()) {
-                  showAccessDeniedMessage();
-                  return;
-              }
-              
               updateLeaderboard();
+              // تحديث كل 30 ثانية
               setInterval(updateLeaderboard, 30000);
-              setInterval(checkTimeAndRedirect, 60000);
           });
       </script>
   </body>
