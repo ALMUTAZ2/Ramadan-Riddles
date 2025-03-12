@@ -54,7 +54,6 @@
               transform: translateY(-5px);
           }
 
-          /* تصميم خاص للمراكز الثلاثة */
           .rank-1 {
               background: linear-gradient(135deg, #ffd700 0%, #fff5d7 100%);
               box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
@@ -162,6 +161,7 @@
               transition: background 0.3s ease;
               text-decoration: none;
               display: inline-block;
+              margin-top: 20px;
           }
 
           .back-button:hover {
@@ -205,7 +205,7 @@
               <!-- سيتم ملء هذا القسم بواسطة JavaScript -->
           </div>
 
-          <div style="text-align: center; margin-top: 30px;">
+          <div style="text-align: center;">
               <a href="index.html" class="back-button">
                   العودة للمسابقة
               </a>
@@ -222,34 +222,44 @@
               return titles[rank - 1];
           }
 
-          function updateLeaderboard() {
-              const leaderboardContainer = document.getElementById('leaderboard-container');
-              
+          function getTopThreePlayers() {
               try {
                   const scores = JSON.parse(localStorage.getItem('quizScores') || '[]');
                   const today = new Date().toISOString().split('T')[0];
                   
-                  const todayScores = scores
+                  return scores
                       .filter(score => score.date.startsWith(today))
                       .sort((a, b) => {
                           if (b.score !== a.score) return b.score - a.score;
                           return a.totalTime - b.totalTime;
                       })
                       .slice(0, 3);
+              } catch (error) {
+                  console.error('Error getting scores:', error);
+                  return [];
+              }
+          }
 
-                  if (todayScores.length === 0) {
-                      leaderboardContainer.innerHTML = `
-                          <div class="no-results">
-                              <h2 style="font-size: 1.5rem; margin-bottom: 10px;">لا توجد نتائج لليوم حتى الآن</h2>
-                              <p>كن أول المتسابقين!</p>
-                          </div>
-                      `;
-                      return;
-                  }
+          function updateLeaderboard() {
+              const leaderboardContainer = document.getElementById('leaderboard-container');
+              const topThree = getTopThreePlayers();
 
-                  leaderboardContainer.innerHTML = todayScores.map((player, index) => {
-                      const rank = index + 1;
-                      return `
+              if (topThree.length === 0) {
+                  leaderboardContainer.innerHTML = `
+                      <div class="no-results">
+                          <h2 style="font-size: 1.5rem; margin-bottom: 10px;">لا توجد نتائج لليوم حتى الآن</h2>
+                          <p>كن أول المتسابقين!</p>
+                      </div>
+                  `;
+                  return;
+              }
+
+              let html = '';
+              for (let i = 0; i < 3; i++) {
+                  const player = topThree[i];
+                  if (player) {
+                      const rank = i + 1;
+                      html += `
                           <div class="leaderboard-item rank-${rank}">
                               <div class="shine"></div>
                               <div class="rank-badge badge-${rank}">
@@ -265,17 +275,10 @@
                               </div>
                           </div>
                       `;
-                  }).join('');
-
-              } catch (error) {
-                  console.error('Error:', error);
-                  leaderboardContainer.innerHTML = `
-                      <div class="no-results" style="color: #ef4444;">
-                          <h2>حدث خطأ</h2>
-                          <p>يرجى تحديث الصفحة والمحاولة مرة أخرى</p>
-                      </div>
-                  `;
+                  }
               }
+              
+              leaderboardContainer.innerHTML = html;
           }
 
           // تحديث عند تحميل الصفحة
@@ -283,6 +286,13 @@
               updateLeaderboard();
               // تحديث كل 30 ثانية
               setInterval(updateLeaderboard, 30000);
+          });
+
+          // إضافة مستمع للتخزين المحلي للتحديث المباشر
+          window.addEventListener('storage', (e) => {
+              if (e.key === 'quizScores') {
+                  updateLeaderboard();
+              }
           });
       </script>
   </body>
