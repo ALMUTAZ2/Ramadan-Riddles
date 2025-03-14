@@ -6,6 +6,8 @@
       <title>المتصدرين - فوازير رمضان</title>
       <script src="https://cdn.tailwindcss.com"></script>
       <script src="https://unpkg.com/lucide@latest"></script>
+      <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
       <style>
           @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
           
@@ -13,20 +15,27 @@
               font-family: 'Cairo', sans-serif;
           }
 
-          .crown {
-              animation: float 3s ease-in-out infinite;
-          }
-
-          @keyframes float {
-              0%, 100% { transform: translateY(0) rotate(0deg); }
-              50% { transform: translateY(-10px) rotate(5deg); }
-          }
+          .trophy-1 { color: #FFD700; }
+          .trophy-2 { color: #C0C0C0; }
+          .trophy-3 { color: #CD7F32; }
 
           .winner-card {
-              transition: all 0.3s ease;
+              transform: translateY(0);
+              transition: transform 0.3s ease;
           }
+
           .winner-card:hover {
               transform: translateY(-5px);
+          }
+
+          @keyframes floatAnimation {
+              0% { transform: translateY(0px) rotate(0deg); }
+              50% { transform: translateY(-10px) rotate(5deg); }
+              100% { transform: translateY(0px) rotate(0deg); }
+          }
+
+          .float {
+              animation: floatAnimation 3s ease-in-out infinite;
           }
 
           .gradient-gold {
@@ -41,7 +50,6 @@
       </style>
   </head>
   <body class="bg-gradient-to-b from-blue-900 to-indigo-950 min-h-screen">
-      <!-- شريط التاريخ -->
       <div class="bg-white/5 backdrop-blur-sm border-b border-white/10 p-3 text-white text-center">
           <div class="max-w-3xl mx-auto flex justify-between items-center">
               <div class="flex items-center gap-2">
@@ -56,19 +64,16 @@
       </div>
 
       <div class="container mx-auto px-4 py-12">
-          <!-- العنوان -->
           <div class="text-center mb-16">
-              <h1 class="text-4xl font-bold text-yellow-400 mb-4">🌙 متصدرو اليوم 🌙</h1>
+              <h1 class="text-4xl font-bold text-yellow-400 mb-4">🌙 المتصدرين اليوم 🌙</h1>
               <p class="text-white/80">أفضل ثلاثة متسابقين في فوازير رمضان</p>
           </div>
 
-          <!-- قائمة المتصدرين -->
           <div class="max-w-3xl mx-auto">
-              <div id="winners-container" class="space-y-4">
+              <div id="winners-container" class="space-y-6">
                   <!-- سيتم ملء هذا القسم بواسطة JavaScript -->
               </div>
 
-              <!-- رسالة عدم وجود نتائج -->
               <div id="no-results" class="hidden">
                   <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center">
                       <i data-lucide="info" class="w-16 h-16 mx-auto text-yellow-400 mb-4"></i>
@@ -83,36 +88,33 @@
       </div>
 
       <script>
-          // تهيئة أيقونات Lucide
+          // تهيئة Firebase
+          const firebaseConfig = {
+              apiKey: "AIzaSyC5RYK1lGaJaMQJmOH85cqNgv6m7rbLS_A",
+              authDomain: "ramadanmotaz-5570f.firebaseapp.com",
+              projectId: "ramadanmotaz-5570f",
+              storageBucket: "ramadanmotaz-5570f.appspot.com",
+              messagingSenderId: "595667154066",
+              appId: "1:595667154066:web:80ba616566ec55a5efe24b"
+          };
+
+          firebase.initializeApp(firebaseConfig);
+          const db = firebase.firestore();
           lucide.createIcons();
 
           // تنسيق التاريخ بالعربية
-          const arabicMonths = [
-              "يناير", "فبراير", "مارس", "إبريل", "مايو", "يونيو",
-              "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
-          ];
-
           function formatDate(date) {
-              const day = date.getDate();
-              const month = arabicMonths[date.getMonth()];
-              const year = date.getFullYear();
-              return `${day} ${month} ${year}`;
+              return new Date().toLocaleDateString('ar-EG', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+              });
           }
 
-          // الحصول على المتصدرين الثلاثة الأوائل
-          function getTopThreePlayers() {
-              try {
-                  const scores = JSON.parse(localStorage.getItem('quizScores') || '[]');
-                  const today = new Date().toISOString().split('T')[0];
-                  
-                  return scores
-                      .filter(score => score.date.startsWith(today))
-                      .sort((a, b) => b.score - a.score)
-                      .slice(0, 3);
-              } catch (error) {
-                  console.error('Error getting scores:', error);
-                  return [];
-              }
+          // تنسيق الوقت برقمين عشريين
+          function formatTime(seconds) {
+              return seconds.toFixed(2);
           }
 
           // إنشاء بطاقة الفائز
@@ -122,7 +124,7 @@
                       gradient: 'gradient-gold',
                       icon: '👑',
                       label: 'المركز الأول',
-                      iconClass: 'crown',
+                      iconClass: 'float',
                       scale: 'scale-105'
                   },
                   2: {
@@ -156,9 +158,15 @@
                                   <div class="text-white/80 text-sm mb-1">${config.label}</div>
                                   <div class="text-white text-xl font-bold">${player.playerName}</div>
                               </div>
-                              <div class="flex-shrink-0 text-center">
-                                  <div class="text-white/80 text-sm">النقاط</div>
-                                  <div class="text-white text-2xl font-bold">${player.score}</div>
+                          </div>
+                      </div>
+                      <div class="p-4 bg-black/20">
+                          <div class="flex justify-between items-center">
+                              <div class="text-yellow-400 text-xl font-bold">
+                                  النقاط: ${player.score}
+                              </div>
+                              <div class="text-blue-400 text-lg">
+                                  الوقت: ${formatTime(player.totalTime)} ثانية
                               </div>
                           </div>
                       </div>
@@ -167,39 +175,70 @@
           }
 
           // تحديث قائمة المتصدرين
-          function updateLeaderboard() {
+          async function updateLeaderboard() {
               const winnersContainer = document.getElementById('winners-container');
               const noResults = document.getElementById('no-results');
               const currentDate = document.getElementById('current-date');
               
-              // تحديث التاريخ
               currentDate.textContent = formatDate(new Date());
 
-              const topThree = getTopThreePlayers();
+              try {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
 
-              if (topThree.length === 0) {
-                  winnersContainer.innerHTML = '';
-                  noResults.classList.remove('hidden');
-                  return;
+                  const snapshot = await db.collection('scores')
+                      .where('timestamp', '>=', today)
+                      .get();
+
+                  let scores = [];
+                  snapshot.forEach(doc => {
+                      scores.push({
+                          id: doc.id,
+                          ...doc.data()
+                      });
+                  });
+
+                  // ترتيب النتائج حسب النقاط والوقت
+                  scores.sort((a, b) => {
+                      if (b.score !== a.score) {
+                          return b.score - a.score;
+                      }
+                      return a.totalTime - b.totalTime;
+                  });
+
+                  // أخذ أفضل 3 نتائج فقط
+                  const topThree = scores.slice(0, 3);
+
+                  if (topThree.length === 0) {
+                      winnersContainer.innerHTML = '';
+                      noResults.classList.remove('hidden');
+                      return;
+                  }
+
+                  noResults.classList.add('hidden');
+                  winnersContainer.innerHTML = topThree
+                      .map((player, index) => createWinnerCard(player, index + 1))
+                      .join('');
+
+                  lucide.createIcons();
+
+              } catch (error) {
+                  console.error('Error fetching winners:', error);
+                  winnersContainer.innerHTML = `
+                      <div class="bg-red-500/10 backdrop-blur-lg rounded-2xl p-8 text-center">
+                          <i data-lucide="alert-triangle" class="w-16 h-16 mx-auto text-red-400 mb-4"></i>
+                          <h2 class="text-2xl font-bold text-white mb-2">حدث خطأ</h2>
+                          <p class="text-gray-300">عذراً، حدث خطأ أثناء تحميل النتائج</p>
+                      </div>
+                  `;
+                  lucide.createIcons();
               }
-
-              noResults.classList.add('hidden');
-              winnersContainer.innerHTML = topThree
-                  .map((player, index) => createWinnerCard(player, index + 1))
-                  .join('');
           }
 
           // تحديث الصفحة كل دقيقة
           document.addEventListener('DOMContentLoaded', () => {
               updateLeaderboard();
               setInterval(updateLeaderboard, 60000);
-          });
-
-          // تحديث عند تغيير التخزين المحلي
-          window.addEventListener('storage', (e) => {
-              if (e.key === 'quizScores') {
-                  updateLeaderboard();
-              }
           });
       </script>
   </body>
