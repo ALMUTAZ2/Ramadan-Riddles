@@ -120,7 +120,83 @@
           </div>
       </div>
 
-      <!-- شاشة البداية -->
+      <!-- باقي الشاشات والكود -->
+      <script>
+          // تهيئة Firebase
+          const firebaseConfig = {
+              apiKey: "AIzaSyC5RYK1lGaJaMQJmOH85cqNgv6m7rbLS_A",
+              authDomain: "ramadanmotaz-5570f.firebaseapp.com",
+              projectId: "ramadanmotaz-5570f",
+              storageBucket: "ramadanmotaz-5570f.appspot.com",
+              messagingSenderId: "595667154066",
+              appId: "1:595667154066:web:80ba616566ec55a5efe24b"
+          };
+
+          firebase.initializeApp(firebaseConfig);
+          const db = firebase.firestore();
+
+          // التحقق من المشاركة السابقة
+          async function checkPreviousParticipation() {
+              try {
+                  const response = await axios.get('https://api.ipify.org?format=json');
+                  const userIP = response.data.ip;
+                  
+                  const now = new Date();
+                  const startTime = new Date();
+                  startTime.setHours(19, 0, 0, 0);
+                  
+                  if (now.getHours() < 19) {
+                      startTime.setDate(startTime.getDate() - 1);
+                  }
+                  
+                  const snapshot = await db.collection('participants')
+                      .where('ip', '==', userIP)
+                      .where('timestamp', '>=', startTime)
+                      .get();
+
+                  return !snapshot.empty;
+              } catch (error) {
+                  console.error('خطأ في التحقق من المشاركة:', error);
+                  return true;
+              }
+          }
+
+          // تسجيل مشاركة جديدة
+          async function recordParticipation() {
+              try {
+                  const response = await axios.get('https://api.ipify.org?format=json');
+                  const userIP = response.data.ip;
+                  
+                  await db.collection('participants').add({
+                      ip: userIP,
+                      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                  });
+              } catch (error) {
+                  console.error('خطأ في تسجيل المشاركة:', error);
+                  throw error;
+              }
+          }
+
+          // حفظ النتيجة
+          async function saveScore(playerData) {
+              try {
+                  await db.collection('scores').add({
+                      playerName: playerData.playerName,
+                      score: playerData.score,
+                      totalTime: playerData.totalTime,
+                      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                  });
+              } catch (error) {
+                  console.error('خطأ في حفظ النتيجة:', error);
+                  throw error;
+              }
+          }
+
+          // باقي الكود...
+      </script>
+  </body>
+  </html>
+        <!-- شاشة البداية -->
       <div id="start-screen" class="hidden min-h-[calc(100vh-64px)] text-white flex items-center justify-center p-6">
           <div class="max-w-md w-full">
               <div class="bg-white/10 backdrop-blur-lg border-2 border-green-400/20 rounded-3xl p-8">
@@ -198,8 +274,10 @@
               <div class="bg-white/10 backdrop-blur-lg border-2 border-yellow-400/30 rounded-2xl p-8">
                   <i data-lucide="trophy" class="w-16 h-16 mx-auto text-yellow-400 mb-4"></i>
                   <h3 class="text-2xl font-bold text-yellow-400 mb-4 text-center">النتيجة النهائية</h3>
-                  <p id="final-name" class="text-xl mb-4 text-center"></p>
-                  <p id="final-score" class="text-xl mb-6 text-center"></p>
+                  <div id="final-results" class="text-center space-y-4">
+                      <p id="final-name" class="text-xl"></p>
+                      <p id="final-score" class="text-xl"></p>
+                  </div>
                   <div id="answers-review" class="space-y-4 mt-8"></div>
                   <div class="flex gap-4 mt-6">
                       <button
@@ -220,113 +298,6 @@
       </div>
 
       <script>
-          // تهيئة Firebase
-          const firebaseConfig = {
-              apiKey: "AIzaSyC5RYK1lGaJaMQJmOH85cqNgv6m7rbLS_A",
-              authDomain: "ramadanmotaz-5570f.firebaseapp.com",
-              projectId: "ramadanmotaz-5570f",
-              storageBucket: "ramadanmotaz-5570f.appspot.com",
-              messagingSenderId: "595667154066",
-              appId: "1:595667154066:web:80ba616566ec55a5efe24b"
-          };
-
-          firebase.initializeApp(firebaseConfig);
-          const db = firebase.firestore();
-          lucide.createIcons();
-
-          // التحقق من المشاركة السابقة
-          async function checkPreviousParticipation() {
-    try {
-        const response = await axios.get('https://api.ipify.org?format=json');
-        const userIP = response.data.ip;
-        
-        // الحصول على التاريخ والوقت الحالي
-        const now = new Date();
-        const currentHour = now.getHours();
-        
-        // إنشاء تاريخ بداية اليوم (7 مساءً)
-        const startTime = new Date();
-        startTime.setHours(19, 0, 0, 0); // 7 PM
-        
-        // إذا كان الوقت الحالي قبل 7 مساءً، نرجع لليوم السابق
-        if (currentHour < 19) {
-            startTime.setDate(startTime.getDate() - 1);
-        }
-        
-        const snapshot = await db.collection('participants')
-            .where('ip', '==', userIP)
-            .where('timestamp', '>=', startTime)
-            .get();
-
-        if (!snapshot.empty) {
-            // التحقق من أن المشاركة كانت في نفس الفترة
-            const participation = snapshot.docs[0].data();
-            const participationTime = participation.timestamp.toDate();
-            const participationHour = participationTime.getHours();
-            
-            // إذا كانت المشاركة في نفس الفترة (نفس اليوم بين 7-8 مساءً)
-            if (participationTime >= startTime && participationHour >= 19 && participationHour < 20) {
-                console.log('تم العثور على مشاركة سابقة في هذه الفترة');
-                return true;
-            }
-        }
-
-        return false;
-    } catch (error) {
-        console.error('خطأ في التحقق من المشاركة:', error);
-        return true;
-    }
-}
-
-
-          // تسجيل مشاركة جديدة
-          async function recordParticipation() {
-              try {
-                  const response = await axios.get('https://api.ipify.org?format=json');
-                  const userIP = response.data.ip;
-                  
-                  await db.collection('participants').add({
-                      ip: userIP,
-                      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                  });
-              } catch (error) {
-                  console.error('خطأ في تسجيل المشاركة:', error);
-                  throw error;
-              }
-          }
-
-          // تحديث التاريخ
-          function updateDateTime() {
-              const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-              const now = new Date();
-              const dayName = days[now.getDay()];
-              const date = now.toLocaleDateString('ar-SA');
-              
-              document.getElementById('day-name').textContent = dayName;
-              document.getElementById('current-date').textContent = date;
-          }
-          updateDateTime();
-
-          // التحقق من وقت المسابقة
-          function checkQuizTime() {
-              const now = new Date();
-              const hours = now.getHours();
-              const startHour = 20; // 7 PM
-              const endHour = 21;   // 8 PM
-
-              if (hours < startHour) {
-                  const remainingHours = startHour - hours;
-                  document.getElementById('time-message').textContent = 
-                      `المسابقة ستبدأ بعد ${remainingHours} ساعة`;
-                  return false;
-              } else if (hours >= endHour) {
-                  document.getElementById('time-message').textContent = 
-                      'انتهت مسابقة اليوم';
-                  return false;
-              }
-              return true;
-          }
-
           // بنك الأسئلة
           const questionBank = [
               {
@@ -376,6 +347,7 @@
               startScreen: document.getElementById('start-screen'),
               quizScreen: document.getElementById('quiz-screen'),
               resultsScreen: document.getElementById('results-screen'),
+              countdownScreen: document.getElementById('countdown-screen'),
               playerNameInput: document.getElementById('player-name'),
               startButton: document.getElementById('start-button'),
               playerWelcome: document.getElementById('player-welcome'),
@@ -388,18 +360,41 @@
               alreadyParticipatedScreen: document.getElementById('already-participated-screen')
           };
 
-          // تفعيل زر البدء عند إدخال الاسم
-          elements.playerNameInput.addEventListener('input', () => {
-              elements.startButton.disabled = !elements.playerNameInput.value.trim();
-          });
+          // سأكمل باقي الكود في الجزء التالي...
+            <script>
+          // تحديث التاريخ
+          function updateDateTime() {
+              const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+              const now = new Date();
+              const dayName = days[now.getDay()];
+              const date = now.toLocaleDateString('ar-SA');
+              
+              document.getElementById('day-name').textContent = dayName;
+              document.getElementById('current-date').textContent = date;
+          }
+
+          // التحقق من وقت المسابقة
+          function checkQuizTime() {
+              const now = new Date();
+              const hours = now.getHours();
+              const startHour = 19; // 7 PM
+              const endHour = 20;   // 8 PM
+
+              if (hours < startHour) {
+                  const remainingHours = startHour - hours;
+                  document.getElementById('time-message').textContent = 
+                      `المسابقة ستبدأ بعد ${remainingHours} ساعة`;
+                  return false;
+              } else if (hours >= endHour) {
+                  document.getElementById('time-message').textContent = 
+                      'انتهت مسابقة اليوم';
+                  return false;
+              }
+              return true;
+          }
 
           // دالة العد التنازلي
           function startCountdown() {
-              const countdownScreen = document.getElementById('countdown-screen');
-              const countdownNumber = document.getElementById('countdown-number');
-              const countdownText = document.getElementById('countdown-text');
-              let currentIndex = 0;
-
               const countdownMessages = [
                   { number: 5, text: "استعد التحدي سيبدأ! 🔥" },
                   { number: 4, text: "ركّز، الفرصة أمامك! 🚀" },
@@ -408,19 +403,24 @@
                   { number: 1, text: "الآن… أطلق إبداعك! 🎯" }
               ];
 
-              countdownScreen.classList.remove('hidden');
+              let currentIndex = 0;
+              elements.countdownScreen.classList.remove('hidden');
               
               function updateCountdown() {
                   if (currentIndex >= countdownMessages.length) {
-                      countdownScreen.classList.add('hidden');
+                      elements.countdownScreen.classList.add('hidden');
                       showQuestion();
                       return;
                   }
 
                   const message = countdownMessages[currentIndex];
-                  countdownNumber.textContent = message.number;
-                  countdownText.textContent = message.text;
+                  document.getElementById('countdown-number').textContent = message.number;
+                  document.getElementById('countdown-text').textContent = message.text;
 
+                  // تحديث الرسوم المتحركة
+                  const countdownNumber = document.getElementById('countdown-number');
+                  const countdownText = document.getElementById('countdown-text');
+                  
                   countdownNumber.classList.remove('countdown-number');
                   countdownText.classList.remove('countdown-text');
                   void countdownNumber.offsetWidth;
@@ -448,7 +448,7 @@
                   await recordParticipation();
                   
                   gameState.playerName = elements.playerNameInput.value.trim();
-                  gameState.questions = questionBank;
+                  gameState.questions = [...questionBank];
                   
                   elements.startScreen.classList.add('hidden');
                   elements.playerWelcome.textContent = `مرحباً ${gameState.playerName}!`;
@@ -464,8 +464,10 @@
           function showQuestion() {
               elements.quizScreen.classList.remove('hidden');
               gameState.isAnswered = false;
+              
               const question = gameState.questions[gameState.currentQuestion];
-              elements.questionCounter.textContent = `السؤال ${gameState.currentQuestion + 1} من ${gameState.questions.length}`;
+              elements.questionCounter.textContent = 
+                  `السؤال ${gameState.currentQuestion + 1} من ${gameState.questions.length}`;
               elements.questionText.textContent = question.question;
               
               elements.optionsContainer.innerHTML = question.options.map((option, index) => `
@@ -493,6 +495,7 @@
               const question = gameState.questions[gameState.currentQuestion];
               const isCorrect = selectedOption === question.correct;
               
+              // حساب النقاط بناءً على سرعة الإجابة
               let points = 0;
               if (isCorrect) {
                   if (answerTime <= 3) points = 100;
@@ -634,12 +637,13 @@
 
               } catch (error) {
                   console.error('خطأ في حفظ النتيجة:', error);
-                  alert('عذراً، حدث خطأ أثناء حفظ النتيجة. يرجى المحاولة مرة أخرى.');
+                  alert('حدث خطأ في حفظ النتيجة. يرجى المحاولة مرة أخرى.');
               }
           }
 
-          // التحقق عند تحميل الصفحة
+          // تهيئة المسابقة
           async function initializeQuiz() {
+              updateDateTime();
               const isQuizTime = checkQuizTime();
               
               if (!isQuizTime) {
@@ -659,6 +663,13 @@
               elements.startScreen.classList.remove('hidden');
           }
 
+          // إضافة مستمعي الأحداث
+          elements.playerNameInput.addEventListener('input', () => {
+              elements.startButton.disabled = !elements.playerNameInput.value.trim();
+          });
+
+          elements.startButton.addEventListener('click', startQuiz);
+
           // التحقق من الوقت كل دقيقة
           setInterval(() => {
               if (!checkQuizTime()) {
@@ -666,11 +677,7 @@
               }
           }, 60000);
 
-          // إضافة مستمع لزر البدء
-          elements.startButton.addEventListener('click', startQuiz);
-
           // بدء التطبيق
           initializeQuiz();
-      </script>
-  </body>
-  </html>
+      </script> 
+
