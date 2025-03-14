@@ -236,29 +236,48 @@
 
           // التحقق من المشاركة السابقة
           async function checkPreviousParticipation() {
-              try {
-                  const response = await axios.get('https://api.ipify.org?format=json');
-                  const userIP = response.data.ip;
-                  
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  
-                  const snapshot = await db.collection('participants')
-                      .where('ip', '==', userIP)
-                      .where('timestamp', '>=', today)
-                      .get();
+    try {
+        const response = await axios.get('https://api.ipify.org?format=json');
+        const userIP = response.data.ip;
+        
+        // الحصول على التاريخ والوقت الحالي
+        const now = new Date();
+        const currentHour = now.getHours();
+        
+        // إنشاء تاريخ بداية اليوم (7 مساءً)
+        const startTime = new Date();
+        startTime.setHours(19, 0, 0, 0); // 7 PM
+        
+        // إذا كان الوقت الحالي قبل 7 مساءً، نرجع لليوم السابق
+        if (currentHour < 19) {
+            startTime.setDate(startTime.getDate() - 1);
+        }
+        
+        const snapshot = await db.collection('participants')
+            .where('ip', '==', userIP)
+            .where('timestamp', '>=', startTime)
+            .get();
 
-                  if (!snapshot.empty) {
-                      console.log('تم العثور على مشاركة سابقة لهذا IP اليوم');
-                      return true;
-                  }
+        if (!snapshot.empty) {
+            // التحقق من أن المشاركة كانت في نفس الفترة
+            const participation = snapshot.docs[0].data();
+            const participationTime = participation.timestamp.toDate();
+            const participationHour = participationTime.getHours();
+            
+            // إذا كانت المشاركة في نفس الفترة (نفس اليوم بين 7-8 مساءً)
+            if (participationTime >= startTime && participationHour >= 19 && participationHour < 20) {
+                console.log('تم العثور على مشاركة سابقة في هذه الفترة');
+                return true;
+            }
+        }
 
-                  return false;
-              } catch (error) {
-                  console.error('خطأ في التحقق من المشاركة:', error);
-                  return true;
-              }
-          }
+        return false;
+    } catch (error) {
+        console.error('خطأ في التحقق من المشاركة:', error);
+        return true;
+    }
+}
+
 
           // تسجيل مشاركة جديدة
           async function recordParticipation() {
