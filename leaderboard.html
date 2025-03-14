@@ -6,8 +6,9 @@
     <title>المتصدرين - فوازير رمضان</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- تحديث إصدار Firebase إلى 9.x -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
         
@@ -48,7 +49,6 @@
             background: linear-gradient(135deg, #CD7F32 0%, #8B4513 100%);
         }
 
-        /* إضافة تأثيرات التحميل */
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -58,7 +58,6 @@
     </style>
 </head>
 <body class="bg-gradient-to-b from-blue-900 to-indigo-950 min-h-screen">
-    <!-- شريط التنقل -->
     <div class="bg-white/5 backdrop-blur-sm border-b border-white/10 p-3 text-white text-center sticky top-0 z-50">
         <div class="max-w-3xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
@@ -72,7 +71,6 @@
         </div>
     </div>
 
-    <!-- المحتوى الرئيسي -->
     <div class="container mx-auto px-4 py-12">
         <div class="text-center mb-16">
             <h1 class="text-4xl font-bold text-yellow-400 mb-4">🌙 المتصدرين اليوم 🌙</h1>
@@ -80,12 +78,10 @@
         </div>
 
         <div class="max-w-3xl mx-auto">
-            <!-- حاوية المتصدرين -->
             <div id="winners-container" class="space-y-6">
                 <!-- سيتم ملء هذا القسم بواسطة JavaScript -->
             </div>
 
-            <!-- رسالة عدم وجود نتائج -->
             <div id="no-results" class="hidden">
                 <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center">
                     <i data-lucide="info" class="w-16 h-16 mx-auto text-yellow-400 mb-4"></i>
@@ -100,7 +96,7 @@
     </div>
 
     <script>
-        // تهيئة Firebase
+        // تكوين Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC5RYK1lGaJaMQJmOH85cqNgv6m7rbLS_A",
             authDomain: "ramadanmotaz-5570f.firebaseapp.com",
@@ -109,17 +105,6 @@
             messagingSenderId: "595667154066",
             appId: "1:595667154066:web:80ba616566ec55a5efe24b"
         };
-
-        // تهيئة Firebase مع معالجة الأخطاء
-        try {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-            }
-            const db = firebase.firestore();
-            console.log('Firebase initialized successfully');
-        } catch (error) {
-            console.error('Error initializing Firebase:', error);
-        }
 
         // تنسيق التاريخ بالعربية
         function formatDate(date) {
@@ -135,7 +120,7 @@
 
         // تنسيق الوقت
         function formatTime(seconds) {
-            return seconds.toFixed(2);
+            return Number(seconds).toFixed(2);
         }
 
         // إظهار حالة التحميل
@@ -187,17 +172,17 @@
                             </div>
                             <div class="flex-1">
                                 <div class="text-white/80 text-sm mb-1">${config.label}</div>
-                                <div class="text-white text-xl font-bold">${player.playerName}</div>
+                                <div class="text-white text-xl font-bold">${player.playerName || 'لاعب مجهول'}</div>
                             </div>
                         </div>
                     </div>
                     <div class="p-4 bg-black/20">
                         <div class="flex justify-between items-center">
                             <div class="text-yellow-400 text-xl font-bold">
-                                النقاط: ${player.score}
+                                النقاط: ${player.score || 0}
                             </div>
                             <div class="text-blue-400 text-lg">
-                                الوقت: ${formatTime(player.totalTime)} ثانية
+                                الوقت: ${formatTime(player.totalTime || 0)} ثانية
                             </div>
                         </div>
                     </div>
@@ -211,13 +196,26 @@
             const noResults = document.getElementById('no-results');
             const currentDate = document.getElementById('current-date');
             
-            // تحديث التاريخ
-            currentDate.textContent = formatDate(new Date());
-            
-            // إظهار حالة التحميل
-            winnersContainer.innerHTML = showLoading();
-            
             try {
+                // تحديث التاريخ
+                currentDate.textContent = formatDate(new Date());
+                
+                // إظهار حالة التحميل
+                winnersContainer.innerHTML = showLoading();
+
+                // التحقق من تهيئة Firebase
+                let db;
+                try {
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(firebaseConfig);
+                    }
+                    db = firebase.firestore();
+                    console.log('Firebase initialized successfully');
+                } catch (firebaseError) {
+                    throw new Error(`خطأ في تهيئة Firebase: ${firebaseError.message}`);
+                }
+
+                // تحديد وقت البداية
                 const today = new Date();
                 const startTime = new Date(today);
                 startTime.setHours(19, 0, 0, 0);
@@ -226,18 +224,31 @@
                     startTime.setDate(startTime.getDate() - 1);
                 }
 
+                console.log('Fetching scores from:', startTime);
+
+                // جلب البيانات
                 const snapshot = await db.collection('scores')
-                    .where('timestamp', '>=', startTime)
-                    .orderBy('timestamp', 'desc')
+                    .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(startTime))
                     .get();
+
+                console.log('Fetched documents:', snapshot.size);
+
+                if (snapshot.empty) {
+                    winnersContainer.innerHTML = '';
+                    noResults.classList.remove('hidden');
+                    return;
+                }
 
                 let scores = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    if (data.score !== undefined && data.totalTime !== undefined) {
+                    if (data && typeof data === 'object') {
                         scores.push({
                             id: doc.id,
-                            ...data
+                            playerName: data.playerName || 'لاعب مجهول',
+                            score: Number(data.score) || 0,
+                            totalTime: Number(data.totalTime) || 0,
+                            timestamp: data.timestamp
                         });
                     }
                 });
@@ -262,12 +273,12 @@
                     .join('');
 
             } catch (error) {
-                console.error('Error fetching winners:', error);
+                console.error('Error details:', error);
                 winnersContainer.innerHTML = `
                     <div class="bg-red-500/10 backdrop-blur-lg rounded-2xl p-8 text-center">
                         <i data-lucide="alert-triangle" class="w-16 h-16 mx-auto text-red-400 mb-4"></i>
                         <h2 class="text-2xl font-bold text-white mb-2">حدث خطأ</h2>
-                        <p class="text-gray-300">عذراً، حدث خطأ أثناء تحميل النتائج. يرجى المحاولة مرة أخرى.</p>
+                        <p class="text-gray-300">عذراً، حدث خطأ أثناء تحميل النتائج: ${error.message}</p>
                         <button onclick="updateLeaderboard()" class="mt-4 px-6 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-white transition-colors">
                             إعادة المحاولة
                         </button>
@@ -279,9 +290,10 @@
             lucide.createIcons();
         }
 
-        // تحديث الصفحة عند التحميل وكل دقيقة
+        // تهيئة الصفحة
         document.addEventListener('DOMContentLoaded', () => {
             updateLeaderboard();
+            // تحديث كل دقيقة
             setInterval(updateLeaderboard, 60000);
         });
     </script>
