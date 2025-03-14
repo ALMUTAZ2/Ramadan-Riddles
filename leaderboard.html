@@ -1,3 +1,6 @@
+id: leaderboard
+type: html
+content: |-
   <!DOCTYPE html>
   <html dir="rtl" lang="ar">
   <head>
@@ -117,6 +120,19 @@
               return seconds.toFixed(2);
           }
 
+          // إضافة دالة التحقق من وقت المسابقة
+          function checkQuizTime() {
+              const now = new Date();
+              const hours = now.getHours();
+              const startHour = 19; // 7 PM
+              const endHour = 20;   // 8 PM
+
+              return {
+                  isQuizTime: hours >= startHour && hours < endHour,
+                  isAfterQuiz: hours >= endHour
+              };
+          }
+
           // إنشاء بطاقة الفائز
           function createWinnerCard(player, rank) {
               const rankConfig = {
@@ -181,13 +197,34 @@
               const currentDate = document.getElementById('current-date');
               
               currentDate.textContent = formatDate(new Date());
+              const timeStatus = checkQuizTime();
+
+              // إذا كان الوقت خلال المسابقة (7-8 مساءً)
+              if (timeStatus.isQuizTime) {
+                  winnersContainer.innerHTML = `
+                      <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center">
+                          <i data-lucide="clock" class="w-16 h-16 mx-auto text-yellow-400 mb-4"></i>
+                          <h2 class="text-2xl font-bold text-white mb-2">المسابقة جارية حالياً</h2>
+                          <p class="text-gray-300">يرجى الانتظار حتى انتهاء المسابقة الساعة 8 مساءً لعرض النتائج</p>
+                      </div>
+                  `;
+                  noResults.classList.add('hidden');
+                  lucide.createIcons();
+                  return;
+              }
 
               try {
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
+                  // تحديد بداية اليوم من 8 مساءً اليوم السابق
+                  const startDate = new Date();
+                  startDate.setHours(20, 0, 0, 0); // 8 PM
+                  
+                  // إذا كان الوقت قبل 8 مساءً، نرجع لليوم السابق
+                  if (!timeStatus.isAfterQuiz) {
+                      startDate.setDate(startDate.getDate() - 1);
+                  }
 
                   const snapshot = await db.collection('scores')
-                      .where('timestamp', '>=', today)
+                      .where('timestamp', '>=', startDate)
                       .get();
 
                   let scores = [];
