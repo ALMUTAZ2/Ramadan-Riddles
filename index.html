@@ -1,677 +1,624 @@
- <!DOCTYPE html>
-  <html dir="rtl" lang="ar">
-  <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>فوازير رمضان 1446</title>
-      <script src="https://cdn.tailwindcss.com"></script>
-      <script src="https://unpkg.com/lucide@latest"></script>
-      <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-      <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-      <style>
-          @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
-          
-          * {
-              font-family: 'Cairo', sans-serif;
-          }
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فوازير رمضان 1446</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        
+        * {
+            font-family: 'Cairo', sans-serif;
+        }
 
-          @keyframes floatMoon {
-              0% { transform: translateY(0px); }
-              50% { transform: translateY(-10px); }
-              100% { transform: translateY(0px); }
-          }
+        @keyframes floatMoon {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
 
-          .floating-moon {
-              animation: floatMoon 3s ease-in-out infinite;
-          }
+        .floating-moon {
+            animation: floatMoon 3s ease-in-out infinite;
+        }
 
-          @keyframes twinkle {
-              0%, 100% { opacity: 1; }
-              50% { opacity: 0.3; }
-          }
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
 
-          .star {
-              position: absolute;
-              color: #FCD34D;
-              animation: twinkle 2s ease-in-out infinite;
-          }
+        .star {
+            position: absolute;
+            color: #FCD34D;
+            animation: twinkle 2s ease-in-out infinite;
+        }
 
-          .option-correct {
-              background-color: rgba(34, 197, 94, 0.2) !important;
-              border-color: rgb(34, 197, 94) !important;
-          }
+        .option-correct {
+            background-color: rgba(34, 197, 94, 0.2) !important;
+            border-color: rgb(34, 197, 94) !important;
+        }
 
-          .option-wrong {
-              background-color: rgba(239, 68, 68, 0.2) !important;
-              border-color: rgb(239, 68, 68) !important;
-          }
+        .option-wrong {
+            background-color: rgba(239, 68, 68, 0.2) !important;
+            border-color: rgb(239, 68, 68) !important;
+        }
 
-          .option-disabled {
-              pointer-events: none;
-              opacity: 0.7;
-          }
+        .option-disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
 
-          @keyframes scaleNumber {
-              0% { transform: scale(1); opacity: 0; }
-              50% { transform: scale(1.5); opacity: 1; }
-              100% { transform: scale(1); opacity: 0; }
-          }
+        @keyframes scaleNumber {
+            0% { transform: scale(1); opacity: 0; }
+            50% { transform: scale(1.5); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
 
-          .countdown-number {
-              animation: scaleNumber 1s ease-out;
-          }
+        .countdown-number {
+            animation: scaleNumber 1s ease-out;
+        }
 
-          .countdown-text {
-              animation: fadeInUp 0.5s ease-out;
-          }
+        .countdown-text {
+            animation: fadeInUp 0.5s ease-out;
+        }
 
-          @keyframes fadeInUp {
-              from {
-                  opacity: 0;
-                  transform: translateY(20px);
-              }
-              to {
-                  opacity: 1;
-                  transform: translateY(0);
-              }
-          }
-      </style>
-  </head>
-  <body class="bg-gradient-to-b from-blue-900 to-indigo-950 min-h-screen">
-      <!-- شريط التاريخ -->
-      <div class="bg-white/5 backdrop-blur-sm border-b border-white/10 p-3 text-white text-center">
-          <div class="max-w-3xl mx-auto flex justify-between items-center">
-              <div class="flex items-center gap-2">
-                  <span id="day-name" class="text-blue-400"></span>
-              </div>
-              <div class="flex items-center gap-2">
-                  <span id="current-date" class="text-green-400"></span>
-              </div>
-          </div>
-      </div>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-blue-900 to-indigo-950 min-h-screen">
+    <!-- شريط التاريخ -->
+    <div class="bg-white/5 backdrop-blur-sm border-b border-white/10 p-3 text-white text-center">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span id="day-name" class="text-blue-400"></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="current-date" class="text-green-400"></span>
+            </div>
+        </div>
+    </div>
 
-      <!-- شاشة خارج وقت المسابقة -->
-      <div id="out-of-time-screen" class="hidden min-h-screen text-white flex items-center justify-center p-6">
-          <div class="max-w-md w-full">
-              <div class="bg-white/10 backdrop-blur-lg border-2 border-yellow-400/20 rounded-3xl p-8 text-center">
-                  <i data-lucide="clock" class="w-16 h-16 mx-auto text-yellow-400 mb-4"></i>
-                  <h2 class="text-2xl font-bold text-yellow-400 mb-4">المسابقة غير متاحة حالياً</h2>
-                  <p class="text-gray-300 mb-6">المسابقة متاحة يومياً من الساعة 7 مساءً حتى 8 مساءً</p>
-                  <div id="time-message" class="text-green-400 mb-6"></div>
-                  <a href="leaderboard.html" class="inline-block bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white px-8 py-3 rounded-xl">
-                      عرض نتائج المتصدرين
-                  </a>
-              </div>
-          </div>
-      </div>
+    <!-- شاشة خارج وقت المسابقة -->
+    <div id="out-of-time-screen" class="hidden min-h-screen text-white flex items-center justify-center p-6">
+        <div class="max-w-md w-full">
+            <div class="bg-white/10 backdrop-blur-lg border-2 border-yellow-400/20 rounded-3xl p-8 text-center">
+                <i data-lucide="clock" class="w-16 h-16 mx-auto text-yellow-400 mb-4"></i>
+                <h2 class="text-2xl font-bold text-yellow-400 mb-4">المسابقة غير متاحة حالياً</h2>
+                <p class="text-gray-300 mb-6">المسابقة متاحة يومياً من الساعة 7 مساءً حتى 8 مساءً</p>
+                <div id="time-message" class="text-green-400 mb-6"></div>
+                <a href="leaderboard.html" class="inline-block bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white px-8 py-3 rounded-xl">
+                    عرض نتائج المتصدرين
+                </a>
+            </div>
+        </div>
+    </div>
 
-      <!-- شاشة المشاركة السابقة -->
-      <div id="already-participated-screen" class="hidden min-h-screen text-white flex items-center justify-center p-6">
-          <div class="max-w-md w-full">
-              <div class="bg-white/10 backdrop-blur-lg border-2 border-red-400/20 rounded-3xl p-8 text-center">
-                  <i data-lucide="alert-circle" class="w-16 h-16 mx-auto text-red-400 mb-4"></i>
-                  <h2 class="text-2xl font-bold text-red-400 mb-4">لقد شاركت مسبقاً</h2>
-                  <p class="text-gray-300 mb-6">يمكنك المشاركة مرة واحدة فقط في اليوم</p>
-                  <a href="leaderboard.html" class="inline-block bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white px-8 py-3 rounded-xl">
-                      عرض نتائج المتصدرين
-                  </a>
-              </div>
-          </div>
-      </div>
+    <!-- شاشة المشاركة السابقة -->
+    <div id="already-participated-screen" class="hidden min-h-screen text-white flex items-center justify-center p-6">
+        <div class="max-w-md w-full">
+            <div class="bg-white/10 backdrop-blur-lg border-2 border-red-400/20 rounded-3xl p-8 text-center">
+                <i data-lucide="alert-circle" class="w-16 h-16 mx-auto text-red-400 mb-4"></i>
+                <h2 class="text-2xl font-bold text-red-400 mb-4">لقد شاركت مسبقاً</h2>
+                <p class="text-gray-300 mb-6">يمكنك المشاركة مرة واحدة فقط في اليوم</p>
+                <a href="leaderboard.html" class="inline-block bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white px-8 py-3 rounded-xl">
+                    عرض نتائج المتصدرين
+                </a>
+            </div>
+        </div>
+    </div>
 
-      <!-- شاشة البداية -->
-      <div id="start-screen" class="hidden min-h-[calc(100vh-64px)] text-white flex items-center justify-center p-6">
-          <div class="max-w-md w-full">
-              <div class="bg-white/10 backdrop-blur-lg border-2 border-green-400/20 rounded-3xl p-8">
-                  <div class="text-center space-y-6">
-                      <div class="relative h-32">
-                          <div class="floating-moon">
-                              <i data-lucide="moon" class="w-20 h-20 mx-auto text-yellow-400"></i>
-                          </div>
-                          <div class="absolute bottom-0 w-full">
-                              <i data-lucide="star" class="star w-4 h-4" style="left: calc(50% - 20px);"></i>
-                              <i data-lucide="star" class="star w-4 h-4" style="left: 50%;"></i>
-                              <i data-lucide="star" class="star w-4 h-4" style="left: calc(50% + 20px);"></i>
-                          </div>
-                      </div>
-                      <h1 class="text-3xl font-bold text-yellow-400">فوازير رمضان</h1>
-                      <div class="space-y-4">
-                          <label class="text-lg block text-center mb-2">
-                              أدخل اسمك للمشاركة في المسابقة
-                          </label>
-                          <input
-                              type="text"
-                              id="player-name"
-                              placeholder="الاسم الكريم"
-                              class="w-full bg-white/5 border-2 border-green-400/20 text-center text-lg py-6 rounded-xl text-white"
-                          >
-                      </div>
-                      <button
-                          id="start-button"
-                          class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-6 rounded-xl text-lg flex items-center justify-center gap-2"
-                          disabled
-                      >
-                          <i data-lucide="sparkles" class="w-5 h-5"></i>
-                          بدء المسابقة
-                      </button>
-                  </div>
-              </div>
-          </div>
-      </div>
+    <!-- شاشة البداية -->
+    <div id="start-screen" class="hidden min-h-[calc(100vh-64px)] text-white flex items-center justify-center p-6">
+        <div class="max-w-md w-full">
+            <div class="bg-white/10 backdrop-blur-lg border-2 border-green-400/20 rounded-3xl p-8">
+                <div class="text-center space-y-6">
+                    <div class="relative h-32">
+                        <div class="floating-moon">
+                            <i data-lucide="moon" class="w-20 h-20 mx-auto text-yellow-400"></i>
+                        </div>
+                        <div class="absolute bottom-0 w-full">
+                            <i data-lucide="star" class="star w-4 h-4" style="left: calc(50% - 20px);"></i>
+                            <i data-lucide="star" class="star w-4 h-4" style="left: 50%;"></i>
+                            <i data-lucide="star" class="star w-4 h-4" style="left: calc(50% + 20px);"></i>
+                        </div>
+                    </div>
+                    <h1 class="text-3xl font-bold text-yellow-400">فوازير رمضان</h1>
+                    <div class="space-y-4">
+                        <label class="text-lg block text-center mb-2">
+                            أدخل اسمك للمشاركة في المسابقة
+                        </label>
+                        <input
+                            type="text"
+                            id="player-name"
+                            placeholder="الاسم الكريم"
+                            class="w-full bg-white/5 border-2 border-green-400/20 text-center text-lg py-6 rounded-xl text-white"
+                        >
+                    </div>
+                    <button
+                        id="start-button"
+                        class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-6 rounded-xl text-lg flex items-center justify-center gap-2"
+                        disabled
+                    >
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        بدء المسابقة
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- شاشة العد التنازلي -->
+    <div id="countdown-screen" class="fixed inset-0 bg-blue-900/95 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+        <div class="text-center">
+            <div id="countdown-number" class="text-8xl font-bold text-yellow-400 mb-4 countdown-number"></div>
+            <div id="countdown-text" class="text-2xl text-white countdown-text"></div>
+        </div>
+    </div>
 
-      <!-- شاشة العد التنازلي -->
-      <div id="countdown-screen" class="fixed inset-0 bg-blue-900/95 backdrop-blur-sm hidden z-50 flex items-center justify-center">
-          <div class="text-center">
-              <div id="countdown-number" class="text-8xl font-bold text-yellow-400 mb-4 countdown-number"></div>
-              <div id="countdown-text" class="text-2xl text-white countdown-text"></div>
-          </div>
-      </div>
+    <!-- شاشة الأسئلة -->
+    <div id="quiz-screen" class="min-h-screen text-white p-6 hidden">
+        <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-yellow-400 mb-2">فوازير رمضان</h1>
+                <p id="player-welcome" class="text-lg text-green-400"></p>
+            </div>
+            <div class="bg-white/10 backdrop-blur-lg border-2 border-green-400/20 rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="clock" class="w-5 h-5"></i>
+                        <span id="timer" class="text-xl font-bold">10</span>
+                    </div>
+                    <div id="question-counter" class="text-lg"></div>
+                </div>
+                <div class="relative h-2 bg-gray-700/50 rounded-full overflow-hidden mb-6">
+                    <div id="timer-bar" class="absolute top-0 left-0 h-full bg-green-400 transition-all duration-1000"></div>
+                </div>
+                <h3 id="question-text" class="text-xl font-semibold mb-6 pr-4 border-r-4 border-green-400"></h3>
+                <div id="options-container" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
 
-      <!-- شاشة الأسئلة -->
-      <div id="quiz-screen" class="min-h-screen text-white p-6 hidden">
-          <div class="max-w-3xl mx-auto">
-              <div class="text-center mb-8">
-                  <h1 class="text-3xl font-bold text-yellow-400 mb-2">فوازير رمضان</h1>
-                  <p id="player-welcome" class="text-lg text-green-400"></p>
-              </div>
-              <div class="bg-white/10 backdrop-blur-lg border-2 border-green-400/20 rounded-2xl p-6">
-                  <div class="flex justify-between items-center mb-4">
-                      <div class="flex items-center gap-2">
-                          <i data-lucide="clock" class="w-5 h-5"></i>
-                          <span id="timer" class="text-xl font-bold">10</span>
-                      </div>
-                      <div id="question-counter" class="text-lg"></div>
-                  </div>
-                  <div class="relative h-2 bg-gray-700/50 rounded-full overflow-hidden mb-6">
-                      <div id="timer-bar" class="absolute top-0 left-0 h-full bg-green-400 transition-all duration-1000"></div>
-                  </div>
-                  <h3 id="question-text" class="text-xl font-semibold mb-6 pr-4 border-r-4 border-green-400"></h3>
-                  <div id="options-container" class="space-y-4"></div>
-              </div>
-          </div>
-      </div>
+    <!-- شاشة النتائج -->
+    <div id="results-screen" class="min-h-screen text-white p-6 hidden">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white/10 backdrop-blur-lg border-2 border-yellow-400/30 rounded-2xl p-8">
+                <i data-lucide="trophy" class="w-16 h-16 mx-auto text-yellow-400 mb-4"></i>
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4 text-center">النتيجة النهائية</h3>
+                <p id="final-name" class="text-xl mb-4 text-center"></p>
+                <p id="final-score" class="text-xl mb-6 text-center"></p>
+                <div id="answers-review" class="space-y-4 mt-8"></div>
+                <div class="flex gap-4 mt-6">
+                    <button onclick="location.reload()" class="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-4 rounded-xl text-lg">
+                        حاول مرة أخرى
+                    </button>
+                    <button onclick="window.location.href='leaderboard.html'" class="flex-1 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white py-4 rounded-xl text-lg">
+                        قائمة المتصدرين
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-      <!-- شاشة النتائج -->
-      <div id="results-screen" class="min-h-screen text-white p-6 hidden">
-          <div class="max-w-2xl mx-auto">
-              <div class="bg-white/10 backdrop-blur-lg border-2 border-yellow-400/30 rounded-2xl p-8">
-                  <i data-lucide="trophy" class="w-16 h-16 mx-auto text-yellow-400 mb-4"></i>
-                  <h3 class="text-2xl font-bold text-yellow-400 mb-4 text-center">النتيجة النهائية</h3>
-                  <p id="final-name" class="text-xl mb-4 text-center"></p>
-                  <p id="final-score" class="text-xl mb-6 text-center"></p>
-                  <div id="answers-review" class="space-y-4 mt-8"></div>
-                  <div class="flex gap-4 mt-6">
-                      <button
-                          onclick="location.reload()"
-                          class="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-4 rounded-xl text-lg"
-                      >
-                          حاول مرة أخرى
-                      </button>
-                      <button
-                          onclick="window.location.href='leaderboard.html'"
-                          class="flex-1 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white py-4 rounded-xl text-lg"
-                      >
-                          قائمة المتصدرين
-                      </button>
-                  </div>
-              </div>
-          </div>
-      </div>
+    <script>
+        // تهيئة Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5RYK1lGaJaMQJmOH85cqNgv6m7rbLS_A",
+            authDomain: "ramadanmotaz-5570f.firebaseapp.com",
+            projectId: "ramadanmotaz-5570f",
+            storageBucket: "ramadanmotaz-5570f.appspot.com",
+            messagingSenderId: "595667154066",
+            appId: "1:595667154066:web:80ba616566ec55a5efe24b"
+        };
 
-      <script>
-          // تهيئة Firebase
-          const firebaseConfig = {
-              apiKey: "AIzaSyC5RYK1lGaJaMQJmOH85cqNgv6m7rbLS_A",
-              authDomain: "ramadanmotaz-5570f.firebaseapp.com",
-              projectId: "ramadanmotaz-5570f",
-              storageBucket: "ramadanmotaz-5570f.appspot.com",
-              messagingSenderId: "595667154066",
-              appId: "1:595667154066:web:80ba616566ec55a5efe24b"
-          };
+        let db;
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.firestore();
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Firebase:', error);
+        }
 
-          firebase.initializeApp(firebaseConfig);
-          const db = firebase.firestore();
-          lucide.createIcons();
+        // بنك الأسئلة
+        const questionBank = [
+            {
+                question: "ما هي السورة التي تعدل ثلث القرآن؟",
+                options: ["سورة الفاتحة", "سورة الإخلاص", "سورة الكوثر", "سورة العصر"],
+                correct: 1
+            },
+            {
+                question: "كم مرة ذُكرت كلمة 'رمضان' في القرآن الكريم؟",
+                options: ["مرتين", "ثلاث مرات", "مرة واحدة", "أربع مرات"],
+                correct: 2
+            },
+            {
+                question: "ما هو أول ما نزل من القرآن الكريم؟",
+                options: ["بسم الله الرحمن الرحيم", "يا أيها المدثر", "الحمد لله رب العالمين", "اقرأ باسم ربك"],
+                correct: 3
+            },
+            {
+                question: "في أي غزوة نزلت سورة الأنفال؟",
+                options: ["غزوة أحد", "غزوة الخندق", "غزوة بدر", "غزوة حنين"],
+                correct: 2
+            },
+            {
+                question: "ما هو الشهر الذي فُرض فيه الصيام على المسلمين؟",
+                options: ["شعبان", "رمضان", "محرم", "رجب"],
+                correct: 1
+            }
+        ];
 
-          // التحقق من المشاركة السابقة
-          async function checkPreviousParticipation() {
-              try {
-                  const response = await axios.get('https://api.ipify.org?format=json');
-                  const userIP = response.data.ip;
-                  
-                  const now = new Date();
-                  const currentHour = now.getHours();
-                  
-                  const startTime = new Date();
-                  startTime.setHours(19, 0, 0, 0);
-                  
-                  if (currentHour < 19) {
-                      startTime.setDate(startTime.getDate() - 1);
-                  }
-                  
-                  const snapshot = await db.collection('participants')
-                      .where('ip', '==', userIP)
-                      .where('timestamp', '>=', startTime)
-                      .get();
+        // حالة اللعبة
+        const gameState = {
+            playerName: "",
+            currentQuestion: 0,
+            score: 0,
+            answers: [],
+            timeLeft: 10,
+            timer: null,
+            questions: [],
+            questionStartTime: null,
+            questionTimes: [],
+            totalTime: 0,
+            isAnswered: false
+        };
 
-                  if (!snapshot.empty) {
-                      const participation = snapshot.docs[0].data();
-                      const participationTime = participation.timestamp.toDate();
-                      const participationHour = participationTime.getHours();
-                      
-                      if (participationTime >= startTime && participationHour >= 19 && participationHour < 20) {
-                          return true;
-                      }
-                  }
+        // العناصر
+        const elements = {
+            startScreen: document.getElementById('start-screen'),
+            quizScreen: document.getElementById('quiz-screen'),
+            resultsScreen: document.getElementById('results-screen'),
+            countdownScreen: document.getElementById('countdown-screen'),
+            playerNameInput: document.getElementById('player-name'),
+            startButton: document.getElementById('start-button'),
+            playerWelcome: document.getElementById('player-welcome'),
+            questionCounter: document.getElementById('question-counter'),
+            questionText: document.getElementById('question-text'),
+            optionsContainer: document.getElementById('options-container'),
+            timer: document.getElementById('timer'),
+            timerBar: document.getElementById('timer-bar'),
+            outOfTimeScreen: document.getElementById('out-of-time-screen'),
+            alreadyParticipatedScreen: document.getElementById('already-participated-screen')
+        };
 
-                  return false;
-              } catch (error) {
-                  console.error('خطأ في التحقق من المشاركة:', error);
-                  return true;
-              }
-          }
+        // تحديث التاريخ والوقت
+        function updateDateTime() {
+            const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+            const now = new Date();
+            const dayName = days[now.getDay()];
+            const date = now.toLocaleDateString('ar-SA');
+            
+            document.getElementById('day-name').textContent = dayName;
+            document.getElementById('current-date').textContent = date;
+        }
 
-          // تسجيل مشاركة جديدة
-          async function recordParticipation() {
-              try {
-                  const response = await axios.get('https://api.ipify.org?format=json');
-                  const userIP = response.data.ip;
-                  
-                  await db.collection('participants').add({
-                      ip: userIP,
-                      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                  });
-              } catch (error) {
-                  console.error('خطأ في تسجيل المشاركة:', error);
-                  throw error;
-              }
-          }
+        // التحقق من وقت المسابقة
+        function checkQuizTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            return hours >= 19 && hours < 20;
+        }
 
-          // تحديث التاريخ
-          function updateDateTime() {
-              const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-              const now = new Date();
-              const dayName = days[now.getDay()];
-              const date = now.toLocaleDateString('ar-SA');
-              
-              document.getElementById('day-name').textContent = dayName;
-              document.getElementById('current-date').textContent = date;
-          }
+        // التحقق من المشاركة السابقة
+        async function checkPreviousParticipation() {
+            try {
+                const response = await axios.get('https://api.ipify.org?format=json');
+                const userIP = response.data.ip;
+                
+                const now = new Date();
+                const startTime = new Date(now);
+                startTime.setHours(19, 0, 0, 0);
+                
+                if (now.getHours() < 19) {
+                    startTime.setDate(startTime.getDate() - 1);
+                }
+                
+                const snapshot = await db.collection('participants')
+                    .where('ip', '==', userIP)
+                    .where('timestamp', '>=', startTime)
+                    .get();
 
-          // التحقق من وقت المسابقة
-          function checkQuizTime() {
-              const now = new Date();
-              const hours = now.getHours();
-              const startHour = 19; // 7 PM
-              const endHour = 20;   // 8 PM
-
-              if (hours < startHour) {
-                  const remainingHours = startHour - hours;
-                  document.getElementById('time-message').textContent = 
-                      `المسابقة ستبدأ بعد ${remainingHours} ساعة`;
-                  return false;
-              } else if (hours >= endHour) {
-                  document.getElementById('time-message').textContent = 
-                      'انتهت مسابقة اليوم';
-                  return false;
-              }
-              return true;
-          }
-
-          // بنك الأسئلة
-          const questionBank = [
-              {
-                  question: "ما هي السورة التي تعدل ثلث القرآن؟",
-                  options: ["سورة الفاتحة", "سورة الإخلاص", "سورة الكوثر", "سورة العصر"],
-                  correct: 1
-              },
-              {
-                  question: "كم مرة ذُكرت كلمة 'رمضان' في القرآن الكريم؟",
-                  options: ["مرتين", "ثلاث مرات", "مرة واحدة", "أربع مرات"],
-                  correct: 2
-              },
-              {
-                  question: "ما هو أول ما نزل من القرآن الكريم؟",
-                  options: ["بسم الله الرحمن الرحيم", "يا أيها المدثر", "الحمد لله رب العالمين", "اقرأ باسم ربك"],
-                  correct: 3
-              },
-              {
-                  question: "في أي غزوة نزلت سورة الأنفال؟",
-                  options: ["غزوة أحد", "غزوة الخندق", "غزوة بدر", "غزوة حنين"],
-                  correct: 2
-              },
-              {
-                  question: "ما هو الشهر الذي فُرض فيه الصيام على المسلمين؟",
-                  options: ["شعبان", "رمضان", "محرم", "رجب"],
-                  correct: 1
-              }
-          ];
-
-          // حالة اللعبة
-          const gameState = {
-              playerName: "",
-              currentQuestion: 0,
-              score: 0,
-              answers: [],
-              timeLeft: 10,
-              timer: null,
-              questions: [],
-              questionStartTime: null,
-              questionTimes: [],
-              totalTime: 0,
-              isAnswered: false
-          };
-
-          // العناصر
-          const elements = {
-              startScreen: document.getElementById('start-screen'),
-              quizScreen: document.getElementById('quiz-screen'),
-              resultsScreen: document.getElementById('results-screen'),
-              countdownScreen: document.getElementById('countdown-screen'),
-              playerNameInput: document.getElementById('player-name'),
-              startButton: document.getElementById('start-button'),
-              playerWelcome: document.getElementById('player-welcome'),
-              questionCounter: document.getElementById('question-counter'),
-              questionText: document.getElementById('question-text'),
-              optionsContainer: document.getElementById('options-container'),
-              timer: document.getElementById('timer'),
-              timerBar: document.getElementById('timer-bar'),
-              outOfTimeScreen: document.getElementById('out-of-time-screen'),
-              alreadyParticipatedScreen: document.getElementById('already-participated-screen')
-          };
-
-          // دالة العد التنازلي
-          function startCountdown() {
-              const countdownMessages = [
-                  { number: 5, text: "استعد التحدي سيبدأ! 🔥" },
-                  { number: 4, text: "ركّز، الفرصة أمامك! 🚀" },
-                  { number: 3, text: "لحظات للحسم، لا تتردد! ⚡️" },
-                  { number: 2, text: "كن الأسرع، كن الأذكى! 🏆" },
-                  { number: 1, text: "الآن… أطلق إبداعك! 🎯" }
-              ];
-
-              let currentIndex = 0;
-              elements.countdownScreen.classList.remove('hidden');
-              
-              function updateCountdown() {
-                  if (currentIndex >= countdownMessages.length) {
-                      elements.countdownScreen.classList.add('hidden');
-                      showQuestion();
-                      return;
-                  }
-
-                  const message = countdownMessages[currentIndex];
-                  document.getElementById('countdown-number').textContent = message.number;
-                  document.getElementById('countdown-text').textContent = message.text;
-
-                  const countdownNumber = document.getElementById('countdown-number');
-                  const countdownText = document.getElementById('countdown-text');
-                  
-                  countdownNumber.classList.remove('countdown-number');
-                  countdownText.classList.remove('countdown-text');
-                  void countdownNumber.offsetWidth;
-                  void countdownText.offsetWidth;
-                  countdownNumber.classList.add('countdown-number');
-                  countdownText.classList.add('countdown-text');
-
-                  currentIndex++;
-                  setTimeout(updateCountdown, 1000);
-              }
-
-              updateCountdown();
-          }
-
-          // بدء المسابقة
-          async function startQuiz() {
-              try {
-                  const hasParticipated = await checkPreviousParticipation();
-                  if (hasParticipated) {
-                      elements.startScreen.classList.add('hidden');
-                      elements.alreadyParticipatedScreen.classList.remove('hidden');
-                      return;
-                  }
-
-                  await recordParticipation();
-                  
-                  gameState.playerName = elements.playerNameInput.value.trim();
-                  gameState.questions = [...questionBank];
-                  
-                  elements.startScreen.classList.add('hidden');
-                  elements.playerWelcome.textContent = `مرحباً ${gameState.playerName}!`;
-                  
-                  startCountdown();
-              } catch (error) {
-                  console.error('خطأ في بدء المسابقة:', error);
-                  alert('حدث خطأ في بدء المسابقة. يرجى المحاولة مرة أخرى.');
-              }
-          }
-
-          // عرض السؤال
-          function showQuestion() {
-              elements.quizScreen.classList.remove('hidden');
-              gameState.isAnswered = false;
-              
-              const question = gameState.questions[gameState.currentQuestion];
-              elements.questionCounter.textContent = 
-                  `السؤال ${gameState.currentQuestion + 1} من ${gameState.questions.length}`;
-              elements.questionText.textContent = question.question;
-              
-              elements.optionsContainer.innerHTML = question.options.map((option, index) => `
-                  <button
-                      onclick="handleAnswer(${index})"
-                      class="w-full text-right bg-white/5 hover:bg-white/10 border-2 border-green-400/20 p-4 rounded-xl transition-colors"
-                  >
-                      ${option}
-                  </button>
-              `).join('');
-
-              gameState.questionStartTime = Date.now();
-              startTimer();
-              lucide.createIcons();
-          }
-
-          // معالجة الإجابة
-          function handleAnswer(selectedOption) {
-              if (gameState.isAnswered) return;
-              gameState.isAnswered = true;
-              
-              clearInterval(gameState.timer);
-              const answerTime = (Date.now() - gameState.questionStartTime) / 1000;
-              gameState.questionTimes.push(answerTime);
-              
-              const question = gameState.questions[gameState.currentQuestion];
-              const isCorrect = selectedOption === question.correct;
-              
-              let points = 0;
-              if (isCorrect) {
-                  if (answerTime <= 3) points = 100;
-                  else if (answerTime <= 5) points = 80;
-                  else if (answerTime <= 7) points = 60;
-                  else points = 40;
-              }
-              
-              gameState.score += points;
-              gameState.totalTime += answerTime;
-
-              const options = elements.optionsContainer.children;
-              Array.from(options).forEach(option => {
-                  option.classList.add('option-disabled');
-              });
-              
-              options[selectedOption].classList.add(isCorrect ? 'option-correct' : 'option-wrong');
-              if (!isCorrect) {
-                  options[question.correct].classList.add('option-correct');
-              }
-
-              gameState.answers.push({
-                  question: question.question,
-                  selectedAnswer: question.options[selectedOption],
-                  correctAnswer: question.options[question.correct],
-                  isCorrect: isCorrect,
-                  time: answerTime,
-                  points: points
-              });
-
-              setTimeout(() => {
-                  if (gameState.currentQuestion < gameState.questions.length - 1) {
-                      gameState.currentQuestion++;
-                      showQuestion();
-                  } else {
-                      showResults();
-                  }
-              }, 1500);
-          }
-
-          // معالجة انتهاء الوقت
-          function handleTimeUp() {
-              if (gameState.isAnswered) return;
-              gameState.isAnswered = true;
-
-              const question = gameState.questions[gameState.currentQuestion];
-              const answerTime = 10;
-              
-              const options = elements.optionsContainer.children;
-              Array.from(options).forEach(option => {
-                  option.classList.add('option-disabled');
-              });
-
-              options[question.correct].classList.add('option-correct');
-
-              gameState.answers.push({
-                  question: question.question,
-                  selectedAnswer: "لم يتم الإجابة",
-                  correctAnswer: question.options[question.correct],
-                  isCorrect: false,
-                  time: answerTime,
-                  points: 0
-              });
-
-              gameState.questionTimes.push(answerTime);
-              gameState.totalTime += answerTime;
-
-              setTimeout(() => {
-                  if (gameState.currentQuestion < gameState.questions.length - 1) {
-                      gameState.currentQuestion++;
-                      showQuestion();
-                  } else {
-                      showResults();
-                  }
-              }, 1500);
-          }
-
-          // بدء المؤقت
-          function startTimer() {
-              gameState.timeLeft = 10;
-              elements.timer.textContent = gameState.timeLeft;
-              elements.timerBar.style.width = '100%';
-              
-              clearInterval(gameState.timer);
-              gameState.timer = setInterval(() => {
-                  gameState.timeLeft--;
-                  elements.timer.textContent = gameState.timeLeft;
-                  elements.timerBar.style.width = `${(gameState.timeLeft / 10) * 100}%`;
-                  
-                  if (gameState.timeLeft <= 0) {
-                      clearInterval(gameState.timer);
-                      handleTimeUp();
-                  }
-              }, 1000);
-          }
-
-          // عرض النتائج
-          async function showResults() {
-              try {
-                  elements.quizScreen.classList.add('hidden');
-                  elements.resultsScreen.classList.remove('hidden');
-
-                  const response = await axios.get('https://api.ipify.org?format=json');
-                  const userIP = response.data.ip;
-
-                  const playerData = {
-                      playerName: gameState.playerName,
-                      score: gameState.score,
-                      totalTime: gameState.totalTime,
-                      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                      ip: userIP
-                  };
-
-                  await db.collection('scores').add(playerData);
-
-                  document.getElementById('final-name').textContent = `الاسم: ${gameState.playerName}`;
-                  document.getElementById('final-score').innerHTML = `
-                      النقاط: ${gameState.score}<br>
-                      الوقت الإجمالي: ${gameState.totalTime.toFixed(2)} ثانية
-                  `;
-
-                  const answersHtml = gameState.answers.map((answer, index) => `
-                      <div class="bg-white/5 p-4 rounded-xl">
-                          <div class="font-bold mb-2">السؤال ${index + 1}</div>
-                          <div class="text-sm opacity-90 mb-2">${answer.question}</div>
-                          <div class="text-sm ${answer.isCorrect ? 'text-green-400' : 'text-red-400'}">
-                              إجابتك: ${answer.selectedAnswer}
-                              ${!answer.isCorrect ? `<br>الإجابة الصحيحة: ${answer.correctAnswer}` : ''}
-                          </div>
-                          <div class="text-sm mt-2">
-                              الوقت: ${answer.time.toFixed(2)} ثانية
-                              <br>
-                              النقاط: ${answer.points}
-                          </div>
-                      </div>
-                  `).join('');
-
-                  document.getElementById('answers-review').innerHTML = answersHtml;
-                  lucide.createIcons();
-
-              } catch (error) {
-                  console.error('خطأ في حفظ النتيجة:', error);
-                  alert('حدث خطأ في حفظ النتيجة. يرجى المحاولة مرة أخرى.');
-              }
-          }
-
-          // تهيئة المسابقة
-          async function initializeQuiz() {
-              try {
-                  updateDateTime();
-                  const isQuizTime = checkQuizTime();
-                  
-                  if (!isQuizTime) {
-                      elements.startScreen.classList.add('hidden');
-                      elements.outOfTimeScreen.classList.remove('hidden');
-                      return;
-                  }
-
-                  const hasParticipated = await checkPreviousParticipation();
-                  
-                  if (hasParticipated) {
-                      elements.startScreen.classList.add('hidden');
-                      elements.alreadyParticipatedScreen.classList.remove('hidden');
-                      return;
-                  }
-
-                  elements.startScreen.classList.remove('hidden');
+                return !snapshot.empty;
             } catch (error) {
-                                    console.error('خطأ في تهيئة المسابقة:', error);
-                  alert('حدث خطأ في تحميل المسابقة. يرجى تحديث الصفحة.');
-              }
-          }
+                console.error('Error checking participation:', error);
+                return false;
+            }
+        }
 
-          // إضافة مستمعي الأحداث
-          elements.playerNameInput.addEventListener('input', () => {
-              elements.startButton.disabled = !elements.playerNameInput.value.trim();
-          });
+        // تسجيل مشاركة جديدة
+        async function recordParticipation() {
+            try {
+                const response = await axios.get('https://api.ipify.org?format=json');
+                const userIP = response.data.ip;
+                
+                await db.collection('participants').add({
+                    ip: userIP,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                console.error('Error recording participation:', error);
+                throw error;
+            }
+        }
 
-          elements.startButton.addEventListener('click', startQuiz);
+        // بدء العد التنازلي
+        function startCountdown() {
+            const countdownMessages = [
+                { number: 5, text: "استعد التحدي سيبدأ! 🔥" },
+                { number: 4, text: "ركّز، الفرصة أمامك! 🚀" },
+                { number: 3, text: "لحظات للحسم، لا تتردد! ⚡️" },
+                { number: 2, text: "كن الأسرع، كن الأذكى! 🏆" },
+                { number: 1, text: "الآن… أطلق إبداعك! 🎯" }
+            ];
 
-          // التحقق من الوقت كل دقيقة
-          setInterval(() => {
-              if (!checkQuizTime()) {
-                  window.location.href = 'leaderboard.html';
-              }
-          }, 60000);
+            let currentIndex = 0;
+            elements.countdownScreen.classList.remove('hidden');
+            
+            function updateCountdown() {
+                if (currentIndex >= countdownMessages.length) {
+                    elements.countdownScreen.classList.add('hidden');
+                    showQuestion();
+                    return;
+                }
 
-          // بدء التطبيق
-          initializeQuiz();
-      </script>
-  </body>
-  </html>
+                const message = countdownMessages[currentIndex];
+                document.getElementById('countdown-number').textContent = message.number;
+                document.getElementById('countdown-text').textContent = message.text;
+
+                currentIndex++;
+                setTimeout(updateCountdown, 1000);
+            }
+
+            updateCountdown();
+        }
+
+        // عرض السؤال
+        function showQuestion() {
+            elements.quizScreen.classList.remove('hidden');
+            gameState.isAnswered = false;
+            
+            const question = gameState.questions[gameState.currentQuestion];
+            elements.questionCounter.textContent = 
+                `السؤال ${gameState.currentQuestion + 1} من ${gameState.questions.length}`;
+            elements.questionText.textContent = question.question;
+            
+            elements.optionsContainer.innerHTML = question.options.map((option, index) => `
+                <button
+                    onclick="handleAnswer(${index})"
+                    class="w-full text-right bg-white/5 hover:bg-white/10 border-2 border-green-400/20 p-4 rounded-xl transition-colors"
+                >
+                    ${option}
+                </button>
+            `).join('');
+
+            gameState.questionStartTime = Date.now();
+            startTimer();
+            lucide.createIcons();
+        }
+
+        // معالجة الإجابة
+        function handleAnswer(selectedOption) {
+            if (gameState.isAnswered) return;
+            gameState.isAnswered = true;
+            
+            clearInterval(gameState.timer);
+            const answerTime = (Date.now() - gameState.questionStartTime) / 1000;
+            gameState.questionTimes.push(answerTime);
+            
+            const question = gameState.questions[gameState.currentQuestion];
+            const isCorrect = selectedOption === question.correct;
+            
+            let points = 0;
+            if (isCorrect) {
+                if (answerTime <= 3) points = 100;
+                else if (answerTime <= 5) points = 80;
+                else if (answerTime <= 7) points = 60;
+                else points = 40;
+            }
+            
+            gameState.score += points;
+            gameState.totalTime += answerTime;
+
+            const options = elements.optionsContainer.children;
+            Array.from(options).forEach(option => {
+                option.classList.add('option-disabled');
+            });
+            
+            options[selectedOption].classList.add(isCorrect ? 'option-correct' : 'option-wrong');
+            if (!isCorrect) {
+                options[question.correct].classList.add('option-correct');
+            }
+
+            gameState.answers.push({
+                question: question.question,
+                selectedAnswer: question.options[selectedOption],
+                correctAnswer: question.options[question.correct],
+                isCorrect: isCorrect,
+                time: answerTime,
+                points: points
+            });
+
+            setTimeout(() => {
+                if (gameState.currentQuestion < gameState.questions.length - 1) {
+                    gameState.currentQuestion++;
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            }, 1500);
+        }
+
+        // بدء المؤقت
+        function startTimer() {
+            gameState.timeLeft = 10;
+            elements.timer.textContent = gameState.timeLeft;
+            elements.timerBar.style.width = '100%';
+            
+            clearInterval(gameState.timer);
+            gameState.timer = setInterval(() => {
+                gameState.timeLeft--;
+                elements.timer.textContent = gameState.timeLeft;
+                elements.timerBar.style.width = `${(gameState.timeLeft / 10) * 100}%`;
+                
+                if (gameState.timeLeft <= 0) {
+                    clearInterval(gameState.timer);
+                    handleTimeUp();
+                }
+            }, 1000);
+        }
+
+        // معالجة انتهاء الوقت
+        function handleTimeUp() {
+            if (gameState.isAnswered) return;
+            handleAnswer(-1);
+        }
+
+        // عرض النتائج
+        async function showResults() {
+            try {
+                elements.quizScreen.classList.add('hidden');
+                elements.resultsScreen.classList.remove('hidden');
+
+                const response = await axios.get('https://api.ipify.org?format=json');
+                const userIP = response.data.ip;
+
+                const playerData = {
+                    playerName: gameState.playerName,
+                    score: gameState.score,
+                    totalTime: gameState.totalTime,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    ip: userIP
+                };
+
+                await db.collection('scores').add(playerData);
+
+                document.getElementById('final-name').textContent = `الاسم: ${gameState.playerName}`;
+                document.getElementById('final-score').innerHTML = `
+                    النقاط: ${gameState.score}<br>
+                    الوقت الإجمالي: ${gameState.totalTime.toFixed(2)} ثانية
+                `;
+
+                const answersHtml = gameState.answers.map((answer, index) => `
+                    <div class="bg-white/5 p-4 rounded-xl">
+                        <div class="font-bold mb-2">السؤال ${index + 1}</div>
+                        <div class="text-sm opacity-90 mb-2">${answer.question}</div>
+                        <div class="text-sm ${answer.isCorrect ? 'text-green-400' : 'text-red-400'}">
+                            إجابتك: ${answer.selectedAnswer}
+                            ${!answer.isCorrect ? `<br>الإجابة الصحيحة: ${answer.correctAnswer}` : ''}
+                        </div>
+                        <div class="text-sm mt-2">
+                            الوقت: ${answer.time.toFixed(2)} ثانية
+                            <br>
+                            النقاط: ${answer.points}
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('answers-review').innerHTML = answersHtml;
+                lucide.createIcons();
+
+            } catch (error) {
+                console.error('Error saving results:', error);
+                alert('حدث خطأ في حفظ النتيجة. يرجى المحاولة مرة أخرى.');
+            }
+        }
+
+        // بدء المسابقة
+        async function startQuiz() {
+            try {
+                const hasParticipated = await checkPreviousParticipation();
+                if (hasParticipated) {
+                    elements.startScreen.classList.add('hidden');
+                    elements.alreadyParticipatedScreen.classList.remove('hidden');
+                    return;
+                }
+
+                await recordParticipation();
+                
+                gameState.playerName = elements.playerNameInput.value.trim();
+                gameState.questions = [...questionBank];
+                
+                elements.startScreen.classList.add('hidden');
+                elements.playerWelcome.textContent = `مرحباً ${gameState.playerName}!`;
+                
+                startCountdown();
+            } catch (error) {
+                console.error('Error starting quiz:', error);
+                alert('حدث خطأ في بدء المسابقة. يرجى المحاولة مرة أخرى.');
+            }
+        }
+
+        // تهيئة المسابقة
+        async function initializeQuiz() {
+            try {
+                updateDateTime();
+                const isQuizTime = checkQuizTime();
+                
+                if (!isQuizTime) {
+                    elements.startScreen.classList.add('hidden');
+                    elements.outOfTimeScreen.classList.remove('hidden');
+                    return;
+                }
+
+                const hasParticipated = await checkPreviousParticipation();
+                
+                if (hasParticipated) {
+                    elements.startScreen.classList.add('hidden');
+                    elements.alreadyParticipatedScreen.classList.remove('hidden');
+                    return;
+                }
+
+                elements.startScreen.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error initializing quiz:', error);
+                alert('حدث خطأ في تحميل المسابقة. يرجى تحديث الصفحة.');
+            }
+        }
+
+        // إضافة مستمعي الأحداث
+        elements.playerNameInput.addEventListener('input', () => {
+            elements.startButton.disabled = !elements.playerNameInput.value.trim();
+        });
+
+        elements.startButton.addEventListener('click', startQuiz);
+
+        // التحقق من الوقت كل دقيقة
+        setInterval(() => {
+            if (!checkQuizTime()) {
+                window.location.href = 'leaderboard.html';
+            }
+        }, 60000);
+
+        // معالجة الأخطاء العامة
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError object: ' + JSON.stringify(error));
+            return false;
+        };
+
+        // بدء التطبيق
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                lucide.createIcons();
+                initializeQuiz();
+            } catch (error) {
+                console.error('Error initializing app:', error);
+            }
+        });
+    </script>
+</body>
+</html>
