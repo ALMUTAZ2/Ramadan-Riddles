@@ -234,6 +234,48 @@
           const db = firebase.firestore();
           lucide.createIcons();
 
+          // التحقق من المشاركة السابقة
+          async function checkPreviousParticipation() {
+              try {
+                  const response = await axios.get('https://api.ipify.org?format=json');
+                  const userIP = response.data.ip;
+                  
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  
+                  const snapshot = await db.collection('participants')
+                      .where('ip', '==', userIP)
+                      .where('timestamp', '>=', today)
+                      .get();
+
+                  if (!snapshot.empty) {
+                      console.log('تم العثور على مشاركة سابقة لهذا IP اليوم');
+                      return true;
+                  }
+
+                  return false;
+              } catch (error) {
+                  console.error('خطأ في التحقق من المشاركة:', error);
+                  return true;
+              }
+          }
+
+          // تسجيل مشاركة جديدة
+          async function recordParticipation() {
+              try {
+                  const response = await axios.get('https://api.ipify.org?format=json');
+                  const userIP = response.data.ip;
+                  
+                  await db.collection('participants').add({
+                      ip: userIP,
+                      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                  });
+              } catch (error) {
+                  console.error('خطأ في تسجيل المشاركة:', error);
+                  throw error;
+              }
+          }
+
           // تحديث التاريخ
           function updateDateTime() {
               const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
@@ -266,42 +308,6 @@
               return true;
           }
 
-          // التحقق من المشاركة السابقة
-          async function checkPreviousParticipation() {
-              try {
-                  const response = await axios.get('https://api.ipify.org?format=json');
-                  const userIP = response.data.ip;
-                  
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  
-                  const snapshot = await db.collection('participants')
-                      .where('ip', '==', userIP)
-                      .where('timestamp', '>=', today)
-                      .get();
-
-                  return !snapshot.empty;
-              } catch (error) {
-                  console.error('Error checking participation:', error);
-                  return false;
-              }
-          }
-
-          // تسجيل مشاركة جديدة
-          async function recordParticipation() {
-              try {
-                  const response = await axios.get('https://api.ipify.org?format=json');
-                  const userIP = response.data.ip;
-                  
-                  await db.collection('participants').add({
-                      ip: userIP,
-                      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                  });
-              } catch (error) {
-                  console.error('Error recording participation:', error);
-              }
-          }
-
           // بنك الأسئلة
           const questionBank = [
               {
@@ -329,15 +335,6 @@
                   options: ["شعبان", "رمضان", "محرم", "رجب"],
                   correct: 1
               }
-          ];
-
-          // رسائل العد التنازلي
-          const countdownMessages = [
-              { number: 5, text: "استعد التحدي سيبدأ! 🔥" },
-              { number: 4, text: "ركّز، الفرصة أمامك! 🚀" },
-              { number: 3, text: "لحظات للحسم، لا تتردد! ⚡️" },
-              { number: 2, text: "كن الأسرع، كن الأذكى! 🏆" },
-              { number: 1, text: "الآن… أطلق إبداعك! 🎯" }
           ];
 
           // حالة اللعبة
@@ -384,6 +381,14 @@
               const countdownText = document.getElementById('countdown-text');
               let currentIndex = 0;
 
+              const countdownMessages = [
+                  { number: 5, text: "استعد التحدي سيبدأ! 🔥" },
+                  { number: 4, text: "ركّز، الفرصة أمامك! 🚀" },
+                  { number: 3, text: "لحظات للحسم، لا تتردد! ⚡️" },
+                  { number: 2, text: "كن الأسرع، كن الأذكى! 🏆" },
+                  { number: 1, text: "الآن… أطلق إبداعك! 🎯" }
+              ];
+
               countdownScreen.classList.remove('hidden');
               
               function updateCountdown() {
@@ -413,15 +418,27 @@
 
           // بدء المسابقة
           async function startQuiz() {
-              await recordParticipation();
-              
-              gameState.playerName = elements.playerNameInput.value.trim();
-              gameState.questions = questionBank;
-              
-              elements.startScreen.classList.add('hidden');
-              elements.playerWelcome.textContent = `مرحباً ${gameState.playerName}!`;
-              
-              startCountdown();
+              try {
+                  const hasParticipated = await checkPreviousParticipation();
+                  if (hasParticipated) {
+                      elements.startScreen.classList.add('hidden');
+                      elements.alreadyParticipatedScreen.classList.remove('hidden');
+                      return;
+                  }
+
+                  await recordParticipation();
+                  
+                  gameState.playerName = elements.playerNameInput.value.trim();
+                  gameState.questions = questionBank;
+                  
+                  elements.startScreen.classList.add('hidden');
+                  elements.playerWelcome.textContent = `مرحباً ${gameState.playerName}!`;
+                  
+                  startCountdown();
+              } catch (error) {
+                  console.error('خطأ في بدء المسابقة:', error);
+                  alert('حدث خطأ في بدء المسابقة. يرجى المحاولة مرة أخرى.');
+              }
           }
 
           // عرض السؤال
@@ -555,45 +572,51 @@
 
           // عرض النتائج
           async function showResults() {
-              elements.quizScreen.classList.add('hidden');
-              elements.resultsScreen.classList.remove('hidden');
-
-              const playerData = {
-                  playerName: gameState.playerName,
-                  score: gameState.score,
-                  totalTime: gameState.totalTime,
-                  timestamp: firebase.firestore.FieldValue.serverTimestamp()
-              };
-
               try {
+                  elements.quizScreen.classList.add('hidden');
+                  elements.resultsScreen.classList.remove('hidden');
+
+                  const response = await axios.get('https://api.ipify.org?format=json');
+                  const userIP = response.data.ip;
+
+                  const playerData = {
+                      playerName: gameState.playerName,
+                      score: gameState.score,
+                      totalTime: gameState.totalTime,
+                      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                      ip: userIP
+                  };
+
                   await db.collection('scores').add(playerData);
+
+                  document.getElementById('final-name').textContent = `الاسم: ${gameState.playerName}`;
+                  document.getElementById('final-score').innerHTML = `
+                      النقاط: ${gameState.score}<br>
+                      الوقت الإجمالي: ${gameState.totalTime.toFixed(2)} ثانية
+                  `;
+
+                  const answersHtml = gameState.answers.map((answer, index) => `
+                      <div class="bg-white/5 p-4 rounded-xl">
+                          <div class="font-bold mb-2">السؤال ${index + 1}</div>
+                          <div class="text-sm opacity-90 mb-2">${answer.question}</div>
+                          <div class="text-sm ${answer.isCorrect ? 'text-green-400' : 'text-red-400'}">
+                              إجابتك: ${answer.selectedAnswer}
+                              ${!answer.isCorrect ? `<br>الإجابة الصحيحة: ${answer.correctAnswer}` : ''}
+                          </div>
+                          <div class="text-sm mt-2">
+                              الوقت: ${answer.time.toFixed(2)} ثانية
+                              <br>
+                              النقاط: ${answer.points}
+                          </div>
+                      </div>
+                  `).join('');
+
+                  document.getElementById('answers-review').innerHTML = answersHtml;
+
               } catch (error) {
-                  console.error('Error saving score:', error);
+                  console.error('خطأ في حفظ النتيجة:', error);
+                  alert('عذراً، حدث خطأ أثناء حفظ النتيجة. يرجى المحاولة مرة أخرى.');
               }
-
-              document.getElementById('final-name').textContent = `الاسم: ${gameState.playerName}`;
-              document.getElementById('final-score').innerHTML = `
-                  النقاط: ${gameState.score}<br>
-                  الوقت الإجمالي: ${gameState.totalTime.toFixed(2)} ثانية
-              `;
-
-              const answersHtml = gameState.answers.map((answer, index) => `
-                  <div class="bg-white/5 p-4 rounded-xl">
-                      <div class="font-bold mb-2">السؤال ${index + 1}</div>
-                      <div class="text-sm opacity-90 mb-2">${answer.question}</div>
-                      <div class="text-sm ${answer.isCorrect ? 'text-green-400' : 'text-red-400'}">
-                          إجابتك: ${answer.selectedAnswer}
-                          ${!answer.isCorrect ? `<br>الإجابة الصحيحة: ${answer.correctAnswer}` : ''}
-                      </div>
-                      <div class="text-sm mt-2">
-                          الوقت: ${answer.time.toFixed(2)} ثانية
-                          <br>
-                          النقاط: ${answer.points}
-                      </div>
-                  </div>
-              `).join('');
-
-              document.getElementById('answers-review').innerHTML = answersHtml;
           }
 
           // التحقق عند تحميل الصفحة
