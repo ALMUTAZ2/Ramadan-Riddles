@@ -1,3 +1,6 @@
+id: complete-leaderboard
+type: html
+content: |-
   <!DOCTYPE html>
   <html dir="rtl" lang="ar">
   <head>
@@ -104,7 +107,7 @@
 
           // تنسيق التاريخ بالعربية
           function formatDate(date) {
-              return new Date().toLocaleDateString('ar-EG', {
+              return date.toLocaleDateString('ar-EG', {
                   weekday: 'long',
                   year: 'numeric',
                   month: 'long',
@@ -115,6 +118,16 @@
           // تنسيق الوقت برقمين عشريين
           function formatTime(seconds) {
               return seconds.toFixed(2);
+          }
+
+          // إضافة دالة التحقق من وقت المسابقة
+          function checkQuizTime() {
+              const now = new Date();
+              const hours = now.getHours();
+              return {
+                  isQuizTime: hours >= 19 && hours < 20,
+                  isAfterQuiz: hours >= 20 || hours < 19
+              };
           }
 
           // إنشاء بطاقة الفائز
@@ -144,7 +157,6 @@
               };
 
               const config = rankConfig[rank];
-
               return `
                   <div class="winner-card ${config.scale} bg-white/10 backdrop-blur-lg rounded-2xl overflow-hidden">
                       <div class="${config.gradient} p-6">
@@ -181,14 +193,35 @@
               const currentDate = document.getElementById('current-date');
               
               currentDate.textContent = formatDate(new Date());
+              const timeStatus = checkQuizTime();
+
+              // التحقق من وقت المسابقة
+              if (timeStatus.isQuizTime) {
+                  winnersContainer.innerHTML = `
+                      <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center">
+                          <i data-lucide="clock" class="w-16 h-16 mx-auto text-yellow-400 mb-4"></i>
+                          <h2 class="text-2xl font-bold text-white mb-2">المسابقة جارية حالياً</h2>
+                          <p class="text-gray-300">يرجى الانتظار حتى انتهاء المسابقة الساعة 8 مساءً لعرض النتائج</p>
+                      </div>
+                  `;
+                  noResults.classList.add('hidden');
+                  lucide.createIcons();
+                  return;
+              }
 
               try {
                   const today = new Date();
                   today.setHours(0, 0, 0, 0);
 
-                  const snapshot = await db.collection('scores')
-                      .where('timestamp', '>=', today)
-                      .get();
+                  const tomorrow = new Date(today);
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+
+                  const query = db.collection('scores')
+                      .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(today))
+                      .where('timestamp', '<', firebase.firestore.Timestamp.fromDate(tomorrow))
+                      .orderBy('timestamp', 'desc');
+
+                  const snapshot = await query.get();
 
                   let scores = [];
                   snapshot.forEach(doc => {
